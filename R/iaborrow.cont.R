@@ -1,7 +1,19 @@
 
-#' Simulation study of using historical control at interim analysis occasion
+#' Simulation study of Bayesian adaptive design incorporating data from
+#' historical controls: univariate continuous outcome
 #'
-#' Simulation study of using historical control at interim analysis occasion
+#' Bayesian adaptive design proposed by Psioda (2018) is implemented, where
+#' historical control data is incorporated at interim decision. The univariate
+#' continuous outcome is only applicable.
+#' @usage
+#' iaborrow.cont(
+#'   n.HC, n.C1, n.T1, n.C2, n.T2,
+#'   out.mean.HC, out.sd.HC, out.mean.C, out.sd.C, out.mean.T, out.sd.T,
+#'   cov.mean.HC, cov.sd.HC, cov.cor.HC,
+#'   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
+#'   a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
+#'   alternative="greater", sig.level=0.05,
+#'   w0, accept.t1e=0.1, accept.pow, nsim=100)
 #' @param n.HC Number of patients in external control.
 #' @param n.C1 Number of patients in concurrent control at interim analysis
 #' occasion.
@@ -41,51 +53,65 @@
 #' @param w0 Range of stopping criteria.
 #' @param accept.t1e Acceptable maximum type I error rate.
 #' @param accept.pow Acceptable minimum power.
-#' @details The \code{iaborrow.cont} is a function generates the operating
-#' characteristics of the Bayesian Optimal Interval design based on toxicity
-#' and efficacy (BOIN-ET) by simulating trials.
+#' @details The \code{iaborrow.cont} is a function which generates the operating
+#' characteristics of Bayesian adaptive design incorporating data from
+#' historical controls. This fixed-borrowing adaptive design incorporates
+#' subject-level control data from a previously completed clinical trial. The
+#' interim analysis evaluates the extent of prior-data conflict based on a
+#' similarity measure for new and historical trial data, and then (i) if the
+#' conflict is too great, the new trial is continued and the data are analyzed
+#' with non-informative prior, (ii) Otherwise, the new trial is stopped early
+#' and the data are analyzed with informative prior. The univariate
+#' continuous outcome is only applicable.
 #' @return Summary of simulation study results
 #' @references
 #' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
 #' incorporating data from historical controls *Statistics in Medicine*
 #' 2018; 37:4054-4070.
 #' @examples
-#' iaborrow.cont()
+#' n.HC        <- 200
+#' n.C1        <- 50
+#' n.T1        <- 50
+#' n.C2        <- 100
+#' n.T2        <- 100
+#' out.mean.HC <- c(-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6)
+#' out.sd.HC   <- 1
+#' out.mean.C  <- 0
+#' out.sd.C    <- 1
+#' out.mean.T  <- 0.46
+#' out.sd.T    <- 1
+#' cov.mean.HC <- c(0,0)
+#' cov.sd.HC   <- c(1,1)
+#' cov.cor.HC  <- cbind(c(1.0,0.5),c(0.5,1.0))
+#' cov.mean.C  <- c(0,0)
+#' cov.sd.C    <- c(1,1)
+#' cov.cor.C   <- cbind(c(1.0,0.5),c(0.5,1.0))
+#' cov.mean.T  <- c(0,0)
+#' cov.sd.T    <- c(1,1)
+#' cov.cor.T   <- cbind(c(1.0,0.5),c(0.5,1.0))
+#' a0          <- 0.5
+#' w0          <- seq(0,5,0.1)
+#'
+#' iaborrow.cont(
+#'   n.HC=n.HC, n.C1=n.C1, n.T1=n.T1, n.C2=n.C2, n.T2=n.T2,
+#'   out.mean.HC=out.mean.HC, out.sd.HC=out.sd.HC,
+#'   out.mean.C=out.mean.C, out.sd.C=out.sd.C,
+#'   out.mean.T=out.mean.T, out.sd.T=out.sd.T,
+#'   cov.mean.HC=cov.mean.HC, cov.sd.HC=cov.sd.HC, cov.cor.HC=cov.cor.HC,
+#'   cov.mean.C=cov.mean.C, cov.sd.C=cov.sd.C, cov.cor.C=cov.cor.C,
+#'   cov.mean.T=cov.mean.T, cov.sd.T=cov.sd.T, cov.cor.T=cov.cor.T,
+#'   a0=a0, w0=w0)
 #' @import rstan MBESS MASS
 #' @export
 
 iaborrow.cont <- function(
-                   n.HC        = 200,
-                   n.C1        = 50,
-                   n.T1        = 50,
-                   n.C2        = 100,
-                   n.T2        = 100,
-                   out.mean.HC = c(-0.6,-0.4,-0.2,0.0,0.2,0.4,0.6),
-                   out.sd.HC   = 1,
-                   out.mean.C  = 0,
-                   out.sd.C    = 1,
-                   out.mean.T  = 0.46,
-                   out.sd.T    = 1,
-                   cov.mean.HC = c(0,0),
-                   cov.sd.HC   = c(1,1),
-                   cov.cor.HC  = cbind(c(1.0,0.5),c(0.5,1.0)),
-                   cov.mean.C  = c(0,0),
-                   cov.sd.C    = c(1,1),
-                   cov.cor.C   = cbind(c(1.0,0.5),c(0.5,1.0)),
-                   cov.mean.T  = c(0,0),
-                   cov.sd.T    = c(1,1),
-                   cov.cor.T   = cbind(c(1.0,0.5),c(0.5,1.0)),
-                   a0          = 0.5,
-                   chains      = 4,
-                   iter        = 2000,
-                   warmup      = floor(iter/2),
-                   thin        = 1,
-                   alternative = "greater",
-                   sig.level   = 0.05,
-                   w0          = seq(0,5,0.1),
-                   accept.t1e  = 0.1,
-                   accept.pow  = 0.7,
-                   nsim        = 10)
+  n.HC, n.C1, n.T1, n.C2, n.T2,
+  out.mean.HC, out.sd.HC, out.mean.C, out.sd.C, out.mean.T, out.sd.T,
+  cov.mean.HC, cov.sd.HC, cov.cor.HC,
+  cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
+  a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
+  alternative="greater", sig.level=0.05,
+  w0, accept.t1e=0.1, accept.pow, nsim=100)
 {
   norm.reg1 <- norm.reg.conc()
   norm.reg2 <- norm.reg.ext()
