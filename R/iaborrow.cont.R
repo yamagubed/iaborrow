@@ -13,7 +13,7 @@
 #'   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
 #'   a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
 #'   alternative="greater", sig.level=0.05,
-#'   w0, accept.t1e=0.1, accept.pow, nsim=100)
+#'   w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 #' @param n.HC Number of patients in external control.
 #' @param n.C1 Number of patients in concurrent control at interim analysis
 #' occasion.
@@ -29,30 +29,36 @@
 #' @param out.sd.C True sd of outcome in concurrent control.
 #' @param out.mean.T True mean of outcome in treatment.
 #' @param out.sd.T True sd of outcome in treatment.
-#' @param cov.mean.HC True mean of covariates in historical control.
-#' @param cov.sd.HC True sd of covariates in historical control.
+#' @param cov.mean.HC Vector of true mean of covariates in historical control.
+#' @param cov.sd.HC Vector of true sd of covariates in historical control.
 #' @param cov.cor.HC True correlation matrix between covariates in historical
 #' control.
-#' @param cov.mean.C True mean of covariates in concurrent control.
-#' @param cov.sd.C True sd of covariates in historical control.
+#' @param cov.mean.C Vector of true mean of covariates in concurrent control.
+#' @param cov.sd.C Vector of true sd of covariates in historical control.
 #' @param cov.cor.C True correlation matrix between covariates in concurrent
 #' control.
-#' @param cov.mean.T True mean of covariates in treatment.
-#' @param cov.sd.T True sd of covariates in treatment.
+#' @param cov.mean.T Vector of true mean of covariates in treatment.
+#' @param cov.sd.T Vector of true sd of covariates in treatment.
 #' @param cov.cor.T True correlation matrix between covariates in treatment.
 #' @param a0 Parameter of power prior.
-#' @param chains Number of Markov chains in MCMC sampling.
+#' @param chains Number of Markov chains in MCMC sampling. The default value is
+#' \code{chains=4}.
 #' @param iter Number of iterations for each chain (including warmup) in MCMC
-#' sampling.
+#' sampling. The default value is \code{iter=2000}.
 #' @param warmup Number of warmup (aka burnin) iterations per chain in MCMC
-#' sampling.
-#' @param thin Period for saving samples in MCMC sampling.
-#' @param nsim Number of simulated trials.
-#' @param alternative Alternative hypothesis.
-#' @param sig.level Significance level.
-#' @param w0 Range of stopping criteria.
-#' @param accept.t1e Acceptable maximum type I error rate.
-#' @param accept.pow Acceptable minimum power.
+#' sampling. The default value is \code{warmup=floor(iter/2)}.
+#' @param thin Period for saving samples in MCMC sampling. The default value
+#' is \code{thin=1}.
+#' @param alternative Alternative hypothesis to be tested ("greater" or "less").
+#' The default value is \code{alternative="greater"}.
+#' @param sig.level Significance level. The default value is
+#' \code{sig.level=0.05}.
+#' @param w0 Vector of range of stopping criteria.
+#' @param accept.t1e Acceptable maximum type I error rate. The default value is
+#' \code{accept.t1e=0.1}.
+#' @param accept.pow Acceptable minimum power. The default value is
+#' \code{accept.pow=0.7}.
+#' @param nsim Number of simulated trials. The default value is \code{nsim=100}.
 #' @details The \code{iaborrow.cont} is a function which generates the operating
 #' characteristics of Bayesian adaptive design incorporating data from
 #' historical controls. This fixed-borrowing adaptive design incorporates
@@ -63,7 +69,7 @@
 #' with non-informative prior, (ii) Otherwise, the new trial is stopped early
 #' and the data are analyzed with informative prior. The univariate
 #' continuous outcome is only applicable.
-#' @return Summary of simulation study results
+#' @return Summary of simulation results.
 #' @references
 #' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
 #' incorporating data from historical controls *Statistics in Medicine*
@@ -111,7 +117,7 @@ iaborrow.cont <- function(
   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
   a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
   alternative="greater", sig.level=0.05,
-  w0, accept.t1e=0.1, accept.pow, nsim=100)
+  w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 {
   norm.reg1 <- norm.reg.conc()
   norm.reg2 <- norm.reg.ext()

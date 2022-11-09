@@ -12,7 +12,7 @@ iaborrow.cont(
   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
   a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
   alternative="greater", sig.level=0.05,
-  w0, accept.t1e=0.1, accept.pow, nsim=100)
+  w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 }
 \arguments{
 \item{n.HC}{Number of patients in external control.}
@@ -41,52 +41,58 @@ occasion.}
 
 \item{out.sd.T}{True sd of outcome in treatment.}
 
-\item{cov.mean.HC}{True mean of covariates in historical control.}
+\item{cov.mean.HC}{Vector of true mean of covariates in historical control.}
 
-\item{cov.sd.HC}{True sd of covariates in historical control.}
+\item{cov.sd.HC}{Vector of true sd of covariates in historical control.}
 
 \item{cov.cor.HC}{True correlation matrix between covariates in historical
 control.}
 
-\item{cov.mean.C}{True mean of covariates in concurrent control.}
+\item{cov.mean.C}{Vector of true mean of covariates in concurrent control.}
 
-\item{cov.sd.C}{True sd of covariates in historical control.}
+\item{cov.sd.C}{Vector of true sd of covariates in historical control.}
 
 \item{cov.cor.C}{True correlation matrix between covariates in concurrent
 control.}
 
-\item{cov.mean.T}{True mean of covariates in treatment.}
+\item{cov.mean.T}{Vector of true mean of covariates in treatment.}
 
-\item{cov.sd.T}{True sd of covariates in treatment.}
+\item{cov.sd.T}{Vector of true sd of covariates in treatment.}
 
 \item{cov.cor.T}{True correlation matrix between covariates in treatment.}
 
 \item{a0}{Parameter of power prior.}
 
-\item{chains}{Number of Markov chains in MCMC sampling.}
+\item{chains}{Number of Markov chains in MCMC sampling. The default value is
+\code{chains=4}.}
 
 \item{iter}{Number of iterations for each chain (including warmup) in MCMC
-sampling.}
+sampling. The default value is \code{iter=2000}.}
 
 \item{warmup}{Number of warmup (aka burnin) iterations per chain in MCMC
-sampling.}
+sampling. The default value is \code{warmup=floor(iter/2)}.}
 
-\item{thin}{Period for saving samples in MCMC sampling.}
+\item{thin}{Period for saving samples in MCMC sampling. The default value
+is \code{thin=1}.}
 
-\item{alternative}{Alternative hypothesis.}
+\item{alternative}{Alternative hypothesis to be tested ("greater" or "less").
+The default value is \code{alternative="greater"}.}
 
-\item{sig.level}{Significance level.}
+\item{sig.level}{Significance level. The default value is
+\code{sig.level=0.05}.}
 
-\item{w0}{Range of stopping criteria.}
+\item{w0}{Vector of range of stopping criteria.}
 
-\item{accept.t1e}{Acceptable maximum type I error rate.}
+\item{accept.t1e}{Acceptable maximum type I error rate. The default value is
+\code{accept.t1e=0.1}.}
 
-\item{accept.pow}{Acceptable minimum power.}
+\item{accept.pow}{Acceptable minimum power. The default value is
+\code{accept.pow=0.7}.}
 
-\item{nsim}{Number of simulated trials.}
+\item{nsim}{Number of simulated trials. The default value is \code{nsim=100}.}
 }
 \value{
-Summary of simulation study results
+Summary of simulation results.
 }
 \description{
 Bayesian adaptive design proposed by Psioda (2018) is implemented, where
