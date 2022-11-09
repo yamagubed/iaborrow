@@ -69,7 +69,27 @@
 #' with non-informative prior, (ii) Otherwise, the new trial is stopped early
 #' and the data are analyzed with informative prior. The univariate
 #' continuous outcome is only applicable.
-#' @return Summary of simulation results.
+#' @return
+#' \item{w}{Likelihood ratio statistics.}
+#' \item{p1}{Probability meeting that the treatment effect is above 0
+#' (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
+#' at interim analysis occasion.}
+#' \item{p2}{Probability meeting that the treatment effect is above 0
+#' (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
+#' at final analysis occasion.}
+#' \item{sig.rate}{Reject rate.}
+#' \item{max.t1e}{Type I error at every \code{w0}}
+#' \item{min.pow}{Power at every \code{w0}}
+#' \item{stop.rate}{Stoppage probability at every \code{w0}.}
+#' \item{w0.opt}{Optimal value of \code{w0}.}
+#' \item{t1e}{Type I error rate at optimal value of \code{w0}.}
+#' \item{stop.null}{Stoppage probability at optimal value of \code{w0} under
+#' null hypothesis.}
+#' \item{exp.size.null}{Expected total sample size under null hypothesis.}
+#' \item{pow}{Power at optimal value of \code{w0}.}
+#' \item{stop.alt}{Stoppage probability at optimal value of \code{w0} under
+#' alternative hypothesis.}
+#' \item{exp.size.alt}{Expected total sample size under alternative hypothesis.}
 #' @references
 #' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
 #' incorporating data from historical controls *Statistics in Medicine*
@@ -132,9 +152,9 @@ iaborrow.cont <- function(
   cov.vcov.C  <- MBESS::cor2cov(cor.mat=cov.cor.C,sd=cov.sd.C)
   cov.vcov.T  <- MBESS::cor2cov(cor.mat=cov.cor.T,sd=cov.sd.T)
 
-  wei <- array(0,dim=c(nsim,ls1,ls2))
-  p1  <- array(0,dim=c(nsim,ls1,ls2))
-  p2  <- array(0,dim=c(nsim,ls1,ls2))
+  w  <- array(0,dim=c(nsim,ls1,ls2))
+  p1 <- array(0,dim=c(nsim,ls1,ls2))
+  p2 <- array(0,dim=c(nsim,ls1,ls2))
 
   for(ss in 1:nsim){
     for(s1 in 1:ls1){
@@ -217,7 +237,7 @@ iaborrow.cont <- function(
         sig3 <- median(mcmc3.sample$sigma)
         sig4 <- median(mcmc3.sample$sigma)
 
-        wei[ss,s1,s2] <- (sum(log(dnorm(dat1$y,m1,sig1)))+a0*sum(log(dnorm(dat2$y,m2,sig2)))
+        w[ss,s1,s2] <- (sum(log(dnorm(dat1$y,m1,sig1)))+a0*sum(log(dnorm(dat2$y,m2,sig2)))
                        -sum(log(dnorm(dat1$y,m3,sig3)))-a0*sum(log(dnorm(dat2$y,m4,sig4))))
 
         if(alternative=="greater"){
@@ -239,26 +259,26 @@ iaborrow.cont <- function(
   stop.rate <- array(0,dim=c(2,lw,ls1))
 
   for(i in 1:lw){
-    sig.rate[1,i,]  <- apply(r1[,,1]*(wei[,,1]<=w0[i])+r2[,,1]*(wei[,,1]>w0[i]),2,mean)
-    sig.rate[2,i,]  <- apply(r1[,,2]*(wei[,,2]<=w0[i])+r2[,,2]*(wei[,,2]>w0[i]),2,mean)
+    sig.rate[1,i,]  <- apply(r1[,,1]*(w[,,1]<=w0[i])+r2[,,1]*(w[,,1]>w0[i]),2,mean)
+    sig.rate[2,i,]  <- apply(r1[,,2]*(w[,,2]<=w0[i])+r2[,,2]*(w[,,2]>w0[i]),2,mean)
     max.t1e[i]      <- max(sig.rate[1,i,])
     min.pow[i]      <- min(sig.rate[2,i,])
-    stop.rate[1,i,] <- apply(wei[,,1]<=w0[i],2,mean)
-    stop.rate[2,i,] <- apply(wei[,,2]<=w0[i],2,mean)
+    stop.rate[1,i,] <- apply(w[,,1]<=w0[i],2,mean)
+    stop.rate[2,i,] <- apply(w[,,2]<=w0[i],2,mean)
   }
 
   w0.opt <- max(w0[(max.t1e<=accept.t1e)&(min.pow>=accept.pow)])
   w0.flg <- which(w0==w0.opt)
 
   t1e           <- sig.rate[1,w0.flg,]
-  stop.null     <- apply(wei[,,1]<=w0.opt,2,mean)
+  stop.null     <- apply(w[,,1]<=w0.opt,2,mean)
   exp.size.null <- stop.null*(n.C1+n.T1)+(1-stop.null)*(n.C2+n.T2)
 
   pow          <- sig.rate[2,w0.flg,]
-  stop.alt     <- apply(wei[,,2]<=w0.opt,2,mean)
+  stop.alt     <- apply(w[,,2]<=w0.opt,2,mean)
   exp.size.alt <- stop.alt*(n.C1+n.T1)+(1-stop.alt)*(n.C2+n.T2)
 
-  return(list(wei=wei,p1=p1,p2=p2,
+  return(list(w=w,p1=p1,p2=p2,
               sig.rate=sig.rate,max.t1e=max.t1e,min.pow=min.pow,
               stop.rate=stop.rate,w0.opt=w0.opt,t1e=t1e,stop.null=stop.null,
               exp.size.null=exp.size.null,pow=pow,stop.alt=stop.alt,

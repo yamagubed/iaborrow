@@ -92,7 +92,26 @@ The default value is \code{alternative="greater"}.}
 \item{nsim}{Number of simulated trials. The default value is \code{nsim=100}.}
 }
 \value{
-Summary of simulation results.
+\item{w}{Likelihood ratio statistics.}
+\item{p1}{Probability meeting that the treatment effect is above 0
+(if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
+at interim analysis occasion.}
+\item{p2}{Probability meeting that the treatment effect is above 0
+(if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
+at final analysis occasion.}
+\item{sig.rate}{Reject rate.}
+\item{max.t1e}{Type I error at every \code{w0}}
+\item{min.pow}{Power at every \code{w0}}
+\item{stop.rate}{Stoppage probability at every \code{w0}.}
+\item{w0.opt}{Optimal value of \code{w0}.}
+\item{t1e}{Type I error rate at optimal value of \code{w0}.}
+\item{stop.null}{Stoppage probability at optimal value of \code{w0} under
+null hypothesis.}
+\item{exp.size.null}{Expected total sample size under null hypothesis.}
+\item{pow}{Power at optimal value of \code{w0}.}
+\item{stop.alt}{Stoppage probability at optimal value of \code{w0} under
+alternative hypothesis.}
+\item{exp.size.alt}{Expected total sample size under alternative hypothesis.}
 }
 \description{
 Bayesian adaptive design proposed by Psioda (2018) is implemented, where
