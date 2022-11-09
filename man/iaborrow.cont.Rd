@@ -10,7 +10,7 @@ iaborrow.cont(
   out.mean.HC, out.sd.HC, out.mean.C, out.sd.C, out.mean.T, out.sd.T,
   cov.mean.HC, cov.sd.HC, cov.cor.HC,
   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
-  a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
+  a0, chains=2, iter=2000, warmup=floor(iter/2), thin=1,
   alternative="greater", sig.level=0.05,
   w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 }

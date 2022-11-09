@@ -11,7 +11,7 @@
 #'   out.mean.HC, out.sd.HC, out.mean.C, out.sd.C, out.mean.T, out.sd.T,
 #'   cov.mean.HC, cov.sd.HC, cov.cor.HC,
 #'   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
-#'   a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
+#'   a0, chains=2, iter=2000, warmup=floor(iter/2), thin=1,
 #'   alternative="greater", sig.level=0.05,
 #'   w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 #' @param n.HC Number of patients in external control.
@@ -135,7 +135,7 @@ iaborrow.cont <- function(
   out.mean.HC, out.sd.HC, out.mean.C, out.sd.C, out.mean.T, out.sd.T,
   cov.mean.HC, cov.sd.HC, cov.cor.HC,
   cov.mean.C, cov.sd.C, cov.cor.C, cov.mean.T, cov.sd.T, cov.cor.T,
-  a0, chains=4, iter=2000, warmup=floor(iter/2), thin=1,
+  a0, chains=2, iter=2000, warmup=floor(iter/2), thin=1,
   alternative="greater", sig.level=0.05,
   w0, accept.t1e=0.1, accept.pow=0.7, nsim=100)
 {
@@ -204,16 +204,16 @@ iaborrow.cont <- function(
           z = c(rep(0,n.C2),rep(1,n.T2)),
           y = c(out.C2,out.T2))
 
-        mcmc1 <- rstan::sampling(norm.reg1,dat1,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE)
+        mcmc1 <- rstan::sampling(norm.reg1,dat1,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE,cores=2)
         mcmc1.sample <- rstan::extract(mcmc1)
 
-        mcmc2 <- rstan::sampling(norm.reg2,dat2,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE)
+        mcmc2 <- rstan::sampling(norm.reg2,dat2,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE,cores=2)
         mcmc2.sample <- rstan::extract(mcmc2)
 
-        mcmc3 <- rstan::sampling(norm.reg3,dat3,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE)
+        mcmc3 <- rstan::sampling(norm.reg3,dat3,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE,cores=2)
         mcmc3.sample <- rstan::extract(mcmc3)
 
-        mcmc4 <- rstan::sampling(norm.reg1,dat4,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE)
+        mcmc4 <- rstan::sampling(norm.reg1,dat4,chains=chains,iter=iter,warmup=warmup,thin=thin,show_messages=FALSE,cores=2)
         mcmc4.sample <- rstan::extract(mcmc4)
 
         hat.alpha0 <- median(mcmc2.sample$alpha)
