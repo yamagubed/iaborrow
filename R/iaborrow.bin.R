@@ -1,14 +1,14 @@
 
 #' Simulation study of Bayesian adaptive design incorporating data from
-#' historical controls: continuous outcome
+#' historical controls: binary outcome
 #'
 #' Bayesian adaptive design proposed by Psioda (2018) is implemented, where
-#' historical control data is incorporated at interim decision. The univariate
-#' continuous outcome is only applicable.
+#' historical control data is incorporated at interim decision. The binary
+#' outcome is applicable.
 #' @usage
-#' iaborrow.cont(
+#' iaborrow.bin(
 #'   n.CT, n.CC, n.EC, n.CT1, n.CC1,
-#'   out.mean.CT, out.sd.CT, out.mean.CC, out.sd.CC, driftdiff, out.sd.EC,
+#'   out.prob.CT, out.prob.CC, driftOR,
 #'   cov.CT, cov.CC, cov.EC, cormat,
 #'   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
 #'   a0, alternative="greater", sig.level=0.05, nsim=10)
@@ -21,13 +21,10 @@
 #' occasion.
 #' @param n.CC1 Number of patients in concurrent control at interim analysis
 #' occasion.
-#' @param out.mean.CT True mean of outcome in concurrent treatment.
-#' @param out.sd.CT True sd of outcome in concurrent treatment.
-#' @param out.mean.CC True mean of outcome in concurrent control.
-#' @param out.sd.CC True as of outcome in concurrent control.
-#' @param driftdiff Difference between external control and concurrent control
-#' for which the bias should be plotted.
-#' @param out.sd.EC True sd of outcome in external control.
+#' @param out.prob.CT True probability of outcome in concurrent treatment.
+#' @param out.prob.CC True probability of outcome in concurrent control.
+#' @param driftOR OR between external control and concurrent control for which
+#' the bias should be plotted.
 #' @param cov.CT List of covariates in concurrent treatment. Distribution and
 #' and its parameters need to be specified for each covariate.
 #' @param cov.CC List of covariates in concurrent control. Distribution and
@@ -36,20 +33,20 @@
 #' and its parameters need to be specified for each covariate.
 #' @param cormat Matrix of correlation between outcome and covariates,
 #' specified as Gaussian copula parameter.
+#' @param a0 Parameter of power prior.
 #' @param chains Number of Markov chains in MCMC sampling. The default value is
-#' \code{chains=4}.
+#' \code{chains=2}.
 #' @param iter Number of iterations for each chain (including warmup) in MCMC
-#' sampling. The default value is \code{iter=2000}.
+#' sampling. The default value is \code{iter=4000}.
 #' @param warmup Number of warmup (aka burnin) iterations per chain in MCMC
 #' sampling. The default value is \code{warmup=floor(iter/2)}.
 #' @param thin Period for saving samples in MCMC sampling. The default value
 #' is \code{thin=1}.
-#' @param a0 Parameter of power prior.
 #' @param alternative Alternative hypothesis to be tested ("greater" or "less").
 #' The default value is \code{alternative="greater"}.
 #' @param sig.level Significance level. The default value is
 #' \code{sig.level=0.05}.
-#' @param nsim Number of simulated trials. The default value is \code{nsim=100}.
+#' @param nsim Number of simulated trials. The default value is \code{nsim=10}.
 #' @return
 #' \item{w}{Likelihood ratio statistics.}
 #' \item{p1}{Probability meeting that the treatment effect is above 0
@@ -65,18 +62,15 @@
 #' incorporating data from historical controls *Statistics in Medicine*
 #' 2018; 37:4054-4070.
 #' @examples
-#' n.CT  <- 100
-#' n.CC  <- 100
+#' n.CT  <- 180
+#' n.CC  <- 180
 #' n.EC  <- 200
-#' n.CT1 <- 50
-#' n.CC1 <- 50
+#' n.CT1 <- 90
+#' n.CC1 <- 90
 #'
-#' out.mean.CT <- c(0,0.46)
-#' out.sd.CT   <- 1
-#' out.mean.CC <- 0
-#' out.sd.CC   <- 1
-#' driftdiff   <- c(-0.2,0.0,0.2)
-#' out.sd.EC   <- 1
+#' out.prob.CT <- c(0.23,0.35)
+#' out.prob.CC <- 0.23
+#' driftOR     <- c(0.6,1.0,1.4)
 #'
 #' cov.CT <- list(list(dist="norm", mean=0,sd=1),
 #'                list(dist="binom",prob=0.2),
@@ -97,35 +91,33 @@
 #'
 #' a0 <- 0.5
 #'
-#' iaborrow.cont(
+#' iaborrow.bin(
 #'   n.CT=n.CT, n.CC=n.CC, n.EC=n.EC, n.CT1=n.CT1, n.CC1=n.CC1,
-#'   out.mean.CT=out.mean.CT, out.sd.CT=out.sd.CT,
-#'   out.mean.CC=out.mean.CC, out.sd.CC=out.sd.CC,
-#'   driftdiff=driftdiff, out.sd.EC=out.sd.EC,
+#'   out.prob.CT=out.prob.CT, out.prob.CC=out.prob.CC, driftOR=driftOR,
 #'   cov.CT=cov.CT, cov.CC=cov.CC, cov.EC=cov.EC, cormat=cormat,
 #'   a0=a0)
-#' @import rstan
+#' @import rstan boot
 #' @export
 
-iaborrow.cont <- function(
+iaborrow.bin <- function(
   n.CT, n.CC, n.EC, n.CT1, n.CC1,
-  out.mean.CT, out.sd.CT, out.mean.CC, out.sd.CC, driftdiff, out.sd.EC,
+  out.prob.CT, out.prob.CC, driftOR,
   cov.CT, cov.CC, cov.EC, cormat,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
   a0, alternative="greater", sig.level=0.05, nsim=10)
 {
-  norm.reg1 <- stan.cont.concurrent()
-  norm.reg2 <- stan.cont.external()
-  norm.reg3 <- stan.cont.hybrid()
+  logistic.reg1 <- stan.bin.concurrent()
+  logistic.reg2 <- stan.bin.external()
+  logistic.reg3 <- stan.bin.hybrid()
 
   n.CT2 <- n.CT-n.CT1
   n.CC2 <- n.CC-n.CC1
   ncov  <- length(cov.CT)
 
-  out.mean.EC <- driftdiff+out.mean.CC
+  out.prob.EC <- (driftOR*out.prob.CC/(1-out.prob.CC))/(1+driftOR*out.prob.CC/(1-out.prob.CC))
 
-  ls1 <- length(out.mean.EC)
-  ls2 <- length(out.mean.CT)
+  ls1 <- length(out.prob.EC)
+  ls2 <- length(out.prob.CT)
 
   w  <- array(0,dim=c(nsim,ls1,ls2))
   p1 <- array(0,dim=c(nsim,ls1,ls2))
@@ -135,9 +127,9 @@ iaborrow.cont <- function(
     for(s1 in 1:ls1){
       for(s2 in 1:ls2){
 
-        marg.CT <- list(list(dist="norm",parm=list(mean=out.mean.CT[s2],sd=out.sd.CT)))
-        marg.CC <- list(list(dist="norm",parm=list(mean=out.mean.CC    ,sd=out.sd.CC)))
-        marg.EC <- list(list(dist="norm",parm=list(mean=out.mean.EC[s1],sd=out.sd.EC)))
+        marg.CT <- list(list(dist="binom",parm=list(size=1,prob=out.prob.CT[s2])))
+        marg.CC <- list(list(dist="binom",parm=list(size=1,prob=out.prob.CC)))
+        marg.EC <- list(list(dist="binom",parm=list(size=1,prob=out.prob.EC[s1])))
 
         for(i in 1:ncov){
           if(cov.CT[[i]]$dist=="norm"){
@@ -199,17 +191,17 @@ iaborrow.cont <- function(
           xCT = data.CT[,-1],
           xCC = data.CC[,-1])
 
-        mcmc1 <- rstan::sampling(norm.reg1,dat1,
-                                chains        = chains,
-                                iter          = iter,
-                                warmup        = warmup,
-                                thin          = thin,
-                                show_messages = FALSE,
-                                cores         = 1,
-                                refresh       = 0)
+        mcmc1 <- rstan::sampling(logistic.reg1,dat1,
+                                 chains        = chains,
+                                 iter          = iter,
+                                 warmup        = warmup,
+                                 thin          = thin,
+                                 show_messages = FALSE,
+                                 cores         = 1,
+                                 refresh       = 0)
         mcmc1.sample <- rstan::extract(mcmc1)
 
-        mcmc2 <- rstan::sampling(norm.reg2,dat2,
+        mcmc2 <- rstan::sampling(logistic.reg2,dat2,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -219,7 +211,7 @@ iaborrow.cont <- function(
                                  refresh       = 0)
         mcmc2.sample <- rstan::extract(mcmc2)
 
-        mcmc3 <- rstan::sampling(norm.reg3,dat3,
+        mcmc3 <- rstan::sampling(logistic.reg3,dat3,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -229,7 +221,7 @@ iaborrow.cont <- function(
                                  refresh       = 0)
         mcmc3.sample <- rstan::extract(mcmc3)
 
-        mcmc4 <- rstan::sampling(norm.reg1,dat4,
+        mcmc4 <- rstan::sampling(logistic.reg1,dat4,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -262,13 +254,10 @@ iaborrow.cont <- function(
 
         m4    <- hat.gammaCC            +(dat2$xEC)%*%hat.beta
 
-        sig1 <- median(mcmc1.sample$sigma)
-        sig2 <- median(mcmc2.sample$sigma)
-        sig3 <- median(mcmc3.sample$sigma)
-        sig4 <- median(mcmc3.sample$sigma)
-
-        w[ss,s1,s2] <- (sum(log(dnorm(c(dat1$yCT,dat1$yCC),m1,sig1)))+a0*sum(log(dnorm(dat2$yEC,m2,sig2)))
-                       -sum(log(dnorm(c(dat1$yCT,dat1$yCC),m3,sig3)))-a0*sum(log(dnorm(dat2$yEC,m4,sig4))))
+        w[ss,s1,s2] <- (   sum(log(dbinom(c(dat1$yCT,dat1$yCC),1,boot::inv.logit(m1))))
+                       +a0*sum(log(dbinom(dat2$yEC,            1,boot::inv.logit(m2))))
+                       -   sum(log(dbinom(c(dat1$yCT,dat1$yCC),1,boot::inv.logit(m3))))
+                       -a0*sum(log(dbinom(dat2$yEC,            1,boot::inv.logit(m4)))))
 
         if(alternative=="greater"){
           p1[ss,s1,s2] <- mean(mcmc3.sample$theta>0)
