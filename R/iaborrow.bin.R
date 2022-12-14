@@ -106,10 +106,6 @@ iaborrow.bin <- function(
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
   a0, alternative="greater", sig.level=0.05, nsim=10)
 {
-  logistic.reg1 <- stan.bin.concurrent()
-  logistic.reg2 <- stan.bin.external()
-  logistic.reg3 <- stan.bin.hybrid()
-
   n.CT2 <- n.CT-n.CT1
   n.CC2 <- n.CC-n.CC1
   ncov  <- length(cov.CT)
@@ -191,7 +187,8 @@ iaborrow.bin <- function(
           xCT = data.CT[,-1],
           xCC = data.CC[,-1])
 
-        mcmc1 <- rstan::sampling(logistic.reg1,dat1,
+        mcmc1 <- rstan::sampling(stanmodels$BinConcurrent,
+                                 data          = dat1,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -201,7 +198,8 @@ iaborrow.bin <- function(
                                  refresh       = 0)
         mcmc1.sample <- rstan::extract(mcmc1)
 
-        mcmc2 <- rstan::sampling(logistic.reg2,dat2,
+        mcmc2 <- rstan::sampling(stanmodels$BinExternal,
+                                 data          = dat2,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -211,7 +209,8 @@ iaborrow.bin <- function(
                                  refresh       = 0)
         mcmc2.sample <- rstan::extract(mcmc2)
 
-        mcmc3 <- rstan::sampling(logistic.reg3,dat3,
+        mcmc3 <- rstan::sampling(stanmodels$BinHybrid,
+                                 data          = dat3,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -221,7 +220,8 @@ iaborrow.bin <- function(
                                  refresh       = 0)
         mcmc3.sample <- rstan::extract(mcmc3)
 
-        mcmc4 <- rstan::sampling(logistic.reg1,dat4,
+        mcmc4 <- rstan::sampling(stanmodels$BinConcurrent,
+                                 data          = dat4,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,

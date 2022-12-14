@@ -114,10 +114,6 @@ iaborrow.cont <- function(
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
   a0, alternative="greater", sig.level=0.05, nsim=10)
 {
-  norm.reg1 <- stan.cont.concurrent()
-  norm.reg2 <- stan.cont.external()
-  norm.reg3 <- stan.cont.hybrid()
-
   n.CT2 <- n.CT-n.CT1
   n.CC2 <- n.CC-n.CC1
   ncov  <- length(cov.CT)
@@ -199,17 +195,19 @@ iaborrow.cont <- function(
           xCT = data.CT[,-1],
           xCC = data.CC[,-1])
 
-        mcmc1 <- rstan::sampling(norm.reg1,dat1,
-                                chains        = chains,
-                                iter          = iter,
-                                warmup        = warmup,
-                                thin          = thin,
-                                show_messages = FALSE,
-                                cores         = 1,
-                                refresh       = 0)
+        mcmc1 <- rstan::sampling(stanmodels$ContConcurrent,
+                                 data          = dat1,
+                                 chains        = chains,
+                                 iter          = iter,
+                                 warmup        = warmup,
+                                 thin          = thin,
+                                 show_messages = FALSE,
+                                 cores         = 1,
+                                 refresh       = 0)
         mcmc1.sample <- rstan::extract(mcmc1)
 
-        mcmc2 <- rstan::sampling(norm.reg2,dat2,
+        mcmc2 <- rstan::sampling(stanmodels$ContExternal,
+                                 data          = dat2,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -219,7 +217,8 @@ iaborrow.cont <- function(
                                  refresh       = 0)
         mcmc2.sample <- rstan::extract(mcmc2)
 
-        mcmc3 <- rstan::sampling(norm.reg3,dat3,
+        mcmc3 <- rstan::sampling(stanmodels$ContHybrid,
+                                 data          = dat3,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
@@ -229,7 +228,8 @@ iaborrow.cont <- function(
                                  refresh       = 0)
         mcmc3.sample <- rstan::extract(mcmc3)
 
-        mcmc4 <- rstan::sampling(norm.reg1,dat4,
+        mcmc4 <- rstan::sampling(stanmodels$ContConcurrent,
+                                 data          = dat4,
                                  chains        = chains,
                                  iter          = iter,
                                  warmup        = warmup,
