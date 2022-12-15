@@ -2,8 +2,7 @@
 % Please edit documentation in R/iaborrow.summary.R
 \name{iaborrow.summary}
 \alias{iaborrow.summary}
-\title{Simulation study of Bayesian adaptive design incorporating data from
-historical controls: binary outcome}
+\title{Summarizing simulation study results}
 \usage{
 iaborrow.summary(
   n.CT, n.CC, n.CT1, n.CC1, ndrift,

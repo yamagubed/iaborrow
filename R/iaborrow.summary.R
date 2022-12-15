@@ -1,6 +1,5 @@
 
-#' Simulation study of Bayesian adaptive design incorporating data from
-#' historical controls: binary outcome
+#' Summarizing simulation study results
 #'
 #' Bayesian adaptive design proposed by Psioda (2018) is implemented, where
 #' historical control data is incorporated at interim decision. The binary

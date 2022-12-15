@@ -2,8 +2,8 @@
 % Please edit documentation in R/iaborrow.cont.R
 \name{iaborrow.cont}
 \alias{iaborrow.cont}
-\title{Simulation study of Bayesian adaptive design incorporating data from
-historical controls: continuous outcome}
+\title{Conducting simulation study of Bayesian adaptive design incorporating data
+from historical controls: continuous outcome}
 \usage{
 iaborrow.cont(
   n.CT, n.CC, n.EC, n.CT1, n.CC1,

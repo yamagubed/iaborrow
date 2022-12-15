@@ -2,8 +2,8 @@
 % Please edit documentation in R/iaborrow.bin.R
 \name{iaborrow.bin}
 \alias{iaborrow.bin}
-\title{Simulation study of Bayesian adaptive design incorporating data from
-historical controls: binary outcome}
+\title{Conducting simulation study of Bayesian adaptive design incorporating data
+from historical controls: binary outcome}
 \usage{
 iaborrow.bin(
   n.CT, n.CC, n.EC, n.CT1, n.CC1,

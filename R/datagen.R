@@ -1,5 +1,5 @@
 
-#' Generate multivariate correlated data
+#' Generating multivariate correlated data
 #'
 #' Multivariate correlated data are generated. Gaussian copula is used to
 #' specify the correlation between variables. Any probability distributions

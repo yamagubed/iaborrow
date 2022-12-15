@@ -2,7 +2,7 @@
 % Please edit documentation in R/datagen.R
 \name{datagen}
 \alias{datagen}
-\title{Generate multivariate correlated data}
+\title{Generating multivariate correlated data}
 \usage{
 datagen(margdist,corvec,nsim=1000)
 }
