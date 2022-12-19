@@ -5,7 +5,7 @@
 \title{Conducting simulation study of Bayesian adaptive design incorporating data
 from historical controls: time-to-event outcome}
 \usage{
-iaborrow.t2e <- function(
+iaborrow.t2e(
   n.CT, n.CC, nevent.C, n.EC, nevent.E, nevent.C1, accrual,
   out.mevent.CT, out.mevent.CC, driftHR,
   cov.CT, cov.CC, cov.EC, cormat,
@@ -84,10 +84,15 @@ at final analysis opportunity.}
 otherwise \code{FALSE}.}
 \item{r2}{\code{TRUE} when significant at final analysis opportunity;
 otherwise \code{FALSE}.}
+\item{n.CT}{Number of patients in concurrent treatment at final analysis
+opportunity.}
 \item{n.CT1}{Number of patients in concurrent treatment at interim analysis
+opportunity.}
+\item{n.CC}{Number of patients in concurrent control at final analysis
 opportunity.}
 \item{n.CC1}{Number of patients in concurrent control at interim analysis
 opportunity.}
+\item{n.EC}{Number of patients in external control.}
 }
 \description{
 Bayesian adaptive design proposed by Psioda (2018) is implemented, where
@@ -95,8 +100,8 @@ historical control data is incorporated at interim decision.
 The time-to-event outcome is applicable.
 }
 \examples{
-n.CT      <- 120
-n.CC      <- 120
+n.CT      <- 60
+n.CC      <- 60
 nevent.C  <- 100
 n.EC      <- 120
 nevent.E  <- 100

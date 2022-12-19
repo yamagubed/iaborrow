@@ -6,7 +6,7 @@
 #' historical control data is incorporated at interim decision.
 #' The time-to-event outcome is applicable.
 #' @usage
-#' iaborrow.t2e <- function(
+#' iaborrow.t2e(
 #'   n.CT, n.CC, nevent.C, n.EC, nevent.E, nevent.C1, accrual,
 #'   out.mevent.CT, out.mevent.CC, driftHR,
 #'   cov.CT, cov.CC, cov.EC, cormat,
@@ -61,17 +61,22 @@
 #' otherwise \code{FALSE}.}
 #' \item{r2}{\code{TRUE} when significant at final analysis opportunity;
 #' otherwise \code{FALSE}.}
+#' \item{n.CT}{Number of patients in concurrent treatment at final analysis
+#' opportunity.}
 #' \item{n.CT1}{Number of patients in concurrent treatment at interim analysis
+#' opportunity.}
+#' \item{n.CC}{Number of patients in concurrent control at final analysis
 #' opportunity.}
 #' \item{n.CC1}{Number of patients in concurrent control at interim analysis
 #' opportunity.}
+#' \item{n.EC}{Number of patients in external control.}
 #' @references
 #' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
 #' incorporating data from historical controls *Statistics in Medicine*
 #' 2018; 37:4054-4070.
 #' @examples
-#' n.CT      <- 120
-#' n.CC      <- 120
+#' n.CT      <- 60
+#' n.CC      <- 60
 #' nevent.C  <- 100
 #' n.EC      <- 120
 #' nevent.E  <- 100
@@ -219,6 +224,15 @@ iaborrow.t2e <- function(
         cenf2 <- (obs.time.CC[cenf1]>last.sub.C1)
         cenf3 <- cenf1&(obs.time.CC>last.sub.C1)
         data.CC1[cenf2,1] <- data.CC1[cenf2,1]-(obs.time.CC[cenf3]-last.sub.C1)
+
+        censor.CT <- censor.CT[data.CT[,1]>0]
+        data.CT   <- data.CT[data.CT[,1]>0,]
+
+        censor.CC <- censor.CC[data.CC[,1]>0]
+        data.CC <- data.CC[data.CC[,1]>0,]
+
+        censor.EC <- censor.EC[data.EC[,1]>0]
+        data.EC <- data.EC[data.EC[,1]>0,]
 
         dat1 <- list(
           nCT_o = sum(censor.CT1==0),
@@ -379,12 +393,19 @@ iaborrow.t2e <- function(
           p2[ss,s1,s2] <- mean(mcmc4.sample$theta<0)
         }
 
+        n.CT[ss,s1,s2]  <- nrow(data.CT)
         n.CT1[ss,s1,s2] <- nrow(data.CT1)
+
+        n.CC[ss,s1,s2]  <- nrow(data.CC)
         n.CC1[ss,s1,s2] <- nrow(data.CC1)
+
+        n.EC[ss,s1,s2]  <- nrow(data.EC)
   }}}
 
   r1 <- (p1>(1-sig.level))
   r2 <- (p2>(1-sig.level))
 
-  return(list(w=w,p1=p1,p2=p2,r1=r1,r2=r2,n.CT1=n.CT1,n.CC1=n.CC1))
+  return(list(w=w,p1=p1,p2=p2,r1=r1,r2=r2,
+              n.CT=n.CT,n.CT1=n.CT1,
+              n.CC=n.CC,n.CC1=n.CC1,n.EC=n.EC))
 }

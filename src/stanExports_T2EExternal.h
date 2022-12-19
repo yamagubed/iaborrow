@@ -77,7 +77,7 @@ static int current_statement__= 0;
 static const std::vector<string> locations_array__ = {" (found before start of program)",
                                                       " (in 'string', line 12, column 2 to column 15)",
                                                       " (in 'string', line 13, column 2 to column 17)",
-                                                      " (in 'string', line 14, column 2 to column 13)",
+                                                      " (in 'string', line 14, column 2 to column 22)",
                                                       " (in 'string', line 17, column 2 to column 25)",
                                                       " (in 'string', line 19, column 4 to column 73)",
                                                       " (in 'string', line 18, column 2 to line 19, column 73)",
@@ -327,6 +327,14 @@ public:
       
       current_statement__ = 3;
       alpha = in__.scalar();
+      current_statement__ = 3;
+      if (jacobian__) {
+        current_statement__ = 3;
+        alpha = stan::math::lb_constrain(alpha, 0, lp__);
+      } else {
+        current_statement__ = 3;
+        alpha = stan::math::lb_constrain(alpha, 0);
+      }
       {
         current_statement__ = 4;
         lp_accum__.add(exponential_lpdf<propto__>(alpha, 1));
@@ -391,6 +399,8 @@ public:
       
       current_statement__ = 3;
       alpha = in__.scalar();
+      current_statement__ = 3;
+      alpha = stan::math::lb_constrain(alpha, 0);
       vars__.emplace_back(gammaCC);
       for (int sym1__ = 1; sym1__ <= p; ++sym1__) {
         vars__.emplace_back(beta[(sym1__ - 1)]);}
@@ -451,10 +461,15 @@ public:
       
       current_statement__ = 3;
       alpha = context__.vals_r("alpha")[(1 - 1)];
+      double alpha_free__;
+      alpha_free__ = std::numeric_limits<double>::quiet_NaN();
+      
+      current_statement__ = 3;
+      alpha_free__ = stan::math::lb_free(alpha, 0);
       vars__.emplace_back(gammaCC);
       for (int sym1__ = 1; sym1__ <= p; ++sym1__) {
         vars__.emplace_back(beta[(sym1__ - 1)]);}
-      vars__.emplace_back(alpha);
+      vars__.emplace_back(alpha_free__);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
       // Next line prevents compiler griping about no return

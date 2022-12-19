@@ -4,7 +4,7 @@
 \alias{datagen}
 \title{Generating multivariate correlated data}
 \usage{
-datagen(margdist,corvec,nsim=1000)
+datagen(margdist,corvec,nsim)
 }
 \arguments{
 \item{margdist}{List of distributions to be used for the data generation.}
