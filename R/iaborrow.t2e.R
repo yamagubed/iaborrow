@@ -159,22 +159,16 @@ iaborrow.t2e <- function(
         data.EC <- datagen(margdist=marg.EC,corvec=cvec,nsim=n.EC)
 
         enroll.period.C <- floor((n.CT+n.CC)/accrual)
+        mn.CT <- floor(n.CT/enroll.period.C)
+        mn.CC <- floor(n.CC/enroll.period.C)
 
         enroll.time.CT <- NULL
         enroll.time.CC <- NULL
         for(i in 1:enroll.period.C){
-          tmp <- runif(1)
-          if(tmp<0.5){
-            tmp.n.CT <- floor(accrual*(n.CT/(n.CT+n.CC)))
-          }else{
-            tmp.n.CT <- ceiling(accrual*(n.CT/(n.CT+n.CC)))
-          }
-          tmp.n.CC <- accrual-tmp.n.CT
-
           e.st <- i-1
           e.en <- i
-          enroll.time.CT <- c(enroll.time.CT,runif(tmp.n.CT,e.st,e.en))
-          enroll.time.CC <- c(enroll.time.CC,runif(tmp.n.CC,e.st,e.en))
+          enroll.time.CT <- c(enroll.time.CT,runif(mn.CT,e.st,e.en))
+          enroll.time.CC <- c(enroll.time.CC,runif(mn.CC,e.st,e.en))
         }
         enroll.time.CT <- c(enroll.time.CT,runif(n.CT-length(enroll.time.CT),enroll.period.C,enroll.period.C+1))
         enroll.time.CC <- c(enroll.time.CC,runif(n.CC-length(enroll.time.CC),enroll.period.C,enroll.period.C+1))
