@@ -11,7 +11,7 @@ data {
 parameters {
   real gammaCC;
   vector[p] beta;
-  real alpha;
+  real<lower=0> alpha;
 }
 model {
   alpha ~ exponential(1);

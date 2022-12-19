@@ -15,6 +15,8 @@ Depends:
     R (>= 3.4.0)
 Imports: 
     methods,
+    boot,
+    copula,
     Rcpp (>= 0.12.0),
     RcppParallel (>= 5.0.1),
     rstan (>= 2.18.1),

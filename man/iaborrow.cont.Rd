@@ -10,22 +10,22 @@ iaborrow.cont(
   out.mean.CT, out.sd.CT, out.mean.CC, out.sd.CC, driftdiff, out.sd.EC,
   cov.CT, cov.CC, cov.EC, cormat,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.05, nsim=10)
+  a0, alternative="greater", sig.level=0.025, nsim=10)
 }
 \arguments{
 \item{n.CT}{Number of patients in concurrent treatment at final analysis
-occasion.}
+opportunity.}
 
 \item{n.CC}{Number of patients in concurrent control at final analysis
-occasion.}
+opportunity.}
 
 \item{n.EC}{Number of patients in external control.}
 
 \item{n.CT1}{Number of patients in concurrent treatment at interim analysis
-occasion.}
+opportunity.}
 
 \item{n.CC1}{Number of patients in concurrent control at interim analysis
-occasion.}
+opportunity.}
 
 \item{out.mean.CT}{True mean of outcome in concurrent treatment.}
 
@@ -49,14 +49,14 @@ and its parameters need to be specified for each covariate.}
 \item{cov.EC}{List of covariates in historical control. Distribution and
 and its parameters need to be specified for each covariate.}
 
-\item{cormat}{Matrix of correlation between outcome and covariates,
+\item{cormat}{Matrix of correlation coefficients for outcome and covariates,
 specified as Gaussian copula parameter.}
 
 \item{chains}{Number of Markov chains in MCMC sampling. The default value is
-\code{chains=4}.}
+\code{chains=2}.}
 
 \item{iter}{Number of iterations for each chain (including warmup) in MCMC
-sampling. The default value is \code{iter=2000}.}
+sampling. The default value is \code{iter=4000}.}
 
 \item{warmup}{Number of warmup (aka burnin) iterations per chain in MCMC
 sampling. The default value is \code{warmup=floor(iter/2)}.}
@@ -70,25 +70,27 @@ is \code{thin=1}.}
 The default value is \code{alternative="greater"}.}
 
 \item{sig.level}{Significance level. The default value is
-\code{sig.level=0.05}.}
+\code{sig.level=0.025}.}
 
-\item{nsim}{Number of simulated trials. The default value is \code{nsim=100}.}
+\item{nsim}{Number of simulated trials. The default value is \code{nsim=10}.}
 }
 \value{
 \item{w}{Likelihood ratio statistics.}
 \item{p1}{Probability meeting that the treatment effect is above 0
 (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
-at interim analysis occasion.}
+at interim analysis opportunity.}
 \item{p2}{Probability meeting that the treatment effect is above 0
 (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
-at final analysis occasion.}
-\item{r1}{Reject the null hypothesis at interim analysis occasion.}
-\item{r2}{Reject the null hypothesis at final analysis occasion.}
+at final analysis opportunity.}
+\item{r1}{\code{TRUE} when significant at interim analysis opportunity;
+otherwise \code{FALSE}.}
+\item{r2}{\code{TRUE} when significant at final analysis opportunity;
+otherwise \code{FALSE}.}
 }
 \description{
 Bayesian adaptive design proposed by Psioda (2018) is implemented, where
-historical control data is incorporated at interim decision. The univariate
-continuous outcome is only applicable.
+historical control data is incorporated at interim decision. The continuous
+outcome is applicable.
 }
 \examples{
 n.CT  <- 100
@@ -105,21 +107,17 @@ driftdiff   <- c(-0.2,0.0,0.2)
 out.sd.EC   <- 1
 
 cov.CT <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.2),
                list(dist="binom",prob=0.4))
 
 cov.CC <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.2),
                list(dist="binom",prob=0.4))
 
 cov.EC <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.2),
                list(dist="binom",prob=0.4))
 
-cormat <- rbind(c(1.0,0.1,0.2,0.3),
-                c(0.1,1.0,0.4,0.5),
-                c(0.2,0.4,1.0,0.6),
-                c(0.3,0.5,0.6,1.0))
+cormat <- rbind(c(  1,0.1,0.1),
+                c(0.1,  1,0.1),
+                c(0.1,0.1,  1))
 
 a0 <- 0.5
 

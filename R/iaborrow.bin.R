@@ -11,27 +11,27 @@
 #'   out.prob.CT, out.prob.CC, driftOR,
 #'   cov.CT, cov.CC, cov.EC, cormat,
 #'   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-#'   a0, alternative="greater", sig.level=0.05, nsim=10)
+#'   a0, alternative="greater", sig.level=0.025, nsim=10)
 #' @param n.CT Number of patients in concurrent treatment at final analysis
-#' occasion.
+#' opportunity.
 #' @param n.CC Number of patients in concurrent control at final analysis
-#' occasion.
+#' opportunity.
 #' @param n.EC Number of patients in external control.
 #' @param n.CT1 Number of patients in concurrent treatment at interim analysis
-#' occasion.
+#' opportunity.
 #' @param n.CC1 Number of patients in concurrent control at interim analysis
-#' occasion.
+#' opportunity.
 #' @param out.prob.CT True probability of outcome in concurrent treatment.
 #' @param out.prob.CC True probability of outcome in concurrent control.
-#' @param driftOR OR between external control and concurrent control for which
-#' the bias should be plotted.
+#' @param driftOR Odds ratio between external control and concurrent control
+#' for which the bias should be plotted.
 #' @param cov.CT List of covariates in concurrent treatment. Distribution and
 #' and its parameters need to be specified for each covariate.
 #' @param cov.CC List of covariates in concurrent control. Distribution and
 #' and its parameters need to be specified for each covariate.
 #' @param cov.EC List of covariates in historical control. Distribution and
 #' and its parameters need to be specified for each covariate.
-#' @param cormat Matrix of correlation between outcome and covariates,
+#' @param cormat Matrix of correlation coefficients for outcome and covariates,
 #' specified as Gaussian copula parameter.
 #' @param a0 Parameter of power prior.
 #' @param chains Number of Markov chains in MCMC sampling. The default value is
@@ -45,49 +45,47 @@
 #' @param alternative Alternative hypothesis to be tested ("greater" or "less").
 #' The default value is \code{alternative="greater"}.
 #' @param sig.level Significance level. The default value is
-#' \code{sig.level=0.05}.
+#' \code{sig.level=0.025}.
 #' @param nsim Number of simulated trials. The default value is \code{nsim=10}.
 #' @return
 #' \item{w}{Likelihood ratio statistics.}
 #' \item{p1}{Probability meeting that the treatment effect is above 0
 #' (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
-#' at interim analysis occasion.}
+#' at interim analysis opportunity.}
 #' \item{p2}{Probability meeting that the treatment effect is above 0
 #' (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
-#' at final analysis occasion.}
-#' \item{r1}{Reject the null hypothesis at interim analysis occasion.}
-#' \item{r2}{Reject the null hypothesis at final analysis occasion.}
+#' at final analysis opportunity.}
+#' \item{r1}{\code{TRUE} when significant at interim analysis opportunity;
+#' otherwise \code{FALSE}.}
+#' \item{r2}{\code{TRUE} when significant at final analysis opportunity;
+#' otherwise \code{FALSE}.}
 #' @references
 #' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
 #' incorporating data from historical controls *Statistics in Medicine*
 #' 2018; 37:4054-4070.
 #' @examples
-#' n.CT  <- 180
-#' n.CC  <- 180
-#' n.EC  <- 200
-#' n.CT1 <- 90
-#' n.CC1 <- 90
+#' n.CT  <- 100
+#' n.CC  <- 100
+#' n.EC  <- 100
+#' n.CT1 <- 50
+#' n.CC1 <- 50
 #'
 #' out.prob.CT <- c(0.23,0.35)
 #' out.prob.CC <- 0.23
 #' driftOR     <- c(0.6,1.0,1.4)
 #'
 #' cov.CT <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.2),
 #'                list(dist="binom",prob=0.4))
 #'
 #' cov.CC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.2),
 #'                list(dist="binom",prob=0.4))
 #'
 #' cov.EC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.2),
 #'                list(dist="binom",prob=0.4))
 #'
-#' cormat <- rbind(c(1.0,0.1,0.2,0.3),
-#'                 c(0.1,1.0,0.4,0.5),
-#'                 c(0.2,0.4,1.0,0.6),
-#'                 c(0.3,0.5,0.6,1.0))
+#' cormat <- rbind(c(  1,0.1,0.1),
+#'                 c(0.1,  1,0.1),
+#'                 c(0.1,0.1,  1))
 #'
 #' a0 <- 0.5
 #'
@@ -104,7 +102,7 @@ iaborrow.bin <- function(
   out.prob.CT, out.prob.CC, driftOR,
   cov.CT, cov.CC, cov.EC, cormat,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.05, nsim=10)
+  a0, alternative="greater", sig.level=0.025, nsim=10)
 {
   n.CT2 <- n.CT-n.CT1
   n.CC2 <- n.CC-n.CC1

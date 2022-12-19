@@ -17,7 +17,7 @@ datagen(margdist,corvec,nsim=1000)
 Data having the specified distribution.
 }
 \description{
-Multivariate correlated data are generated. Gaussian copula is used to
-specify the correlation between variables. Any probability distributions
-available in R STAT is applicable.
+Multivariate correlated data are generated. Gaussian copula parameter
+is used to specify the correlation between variables. Any probability
+distributions available in R STAT is applicable.
 }

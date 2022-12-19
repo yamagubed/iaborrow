@@ -11,16 +11,16 @@ iaborrow.summary(
 }
 \arguments{
 \item{n.CT}{Number of patients in concurrent treatment at final analysis
-occasion.}
+opportunity.}
 
 \item{n.CC}{Number of patients in concurrent control at final analysis
-occasion.}
+opportunity.}
 
 \item{n.CT1}{Number of patients in concurrent treatment at interim analysis
-occasion.}
+opportunity.}
 
 \item{n.CC1}{Number of patients in concurrent control at interim analysis
-occasion.}
+opportunity.}
 
 \item{ndrift}{Number of drift scenarios.}
 
@@ -34,32 +34,20 @@ at interim analysis occasion.}
 (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
 at final analysis occasion.}
 
-\item{r1}{Reject the null hypothesis at interim analysis occasion.}
+\item{r1}{\code{TRUE} when significant at interim analysis opportunity;
+otherwise \code{FALSE}.}
 
-\item{r2}{Reject the null hypothesis at final analysis occasion.}
-}
-\value{
-\item{sig.rate}{Reject rate.}
-\item{max.t1e}{Type I error at every \code{w0}}
-\item{min.pow}{Power at every \code{w0}}
-\item{stop.rate}{Stoppage probability at every \code{w0}.}
-\item{w0.opt}{Optimal value of \code{w0}.}
-\item{t1e}{Type I error rate at optimal value of \code{w0}.}
-\item{stop.null}{Stoppage probability at optimal value of \code{w0} under
-null hypothesis.}
-\item{exp.size.null}{Expected total sample size under null hypothesis.}
-\item{pow}{Power at optimal value of \code{w0}.}
-\item{stop.alt}{Stoppage probability at optimal value of \code{w0} under
-alternative hypothesis.}
-\item{exp.size.alt}{Expected total sample size under alternative hypothesis.}
+\item{r2}{\code{TRUE} when significant at final analysis opportunity;
+otherwise \code{FALSE}.}
+
+\item{w0}{Candidate values of stoppage criteria.}
+
+\item{accept.t1e}{Maximum acceptable type I error rate. The default value is
+\code{accept.t1e=0.1}.}
+
+\item{accept.pow}{Minimum acceptable power. The default value is
+\code{accept.pow=0.7}.}
 }
 \description{
-Bayesian adaptive design proposed by Psioda (2018) is implemented, where
-historical control data is incorporated at interim decision. The binary
-outcome is applicable.
-}
-\references{
-Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
-incorporating data from historical controls \emph{Statistics in Medicine}
-2018; 37:4054-4070.
+Simulation study results are summarized.
 }

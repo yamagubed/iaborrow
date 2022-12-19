@@ -1,11 +1,11 @@
 
 #' Generating multivariate correlated data
 #'
-#' Multivariate correlated data are generated. Gaussian copula is used to
-#' specify the correlation between variables. Any probability distributions
-#' available in R STAT is applicable.
+#' Multivariate correlated data are generated. Gaussian copula parameter
+#' is used to specify the correlation between variables. Any probability
+#' distributions available in R STAT is applicable.
 #' @usage
-#' datagen(margdist,corvec,nsim=1000)
+#' datagen(margdist,corvec,nsim)
 #' @param margdist List of distributions to be used for the data generation.
 #' @param corvec Vector of Gaussian copula correlation parameter.
 #' @param nsim Number of simulation.

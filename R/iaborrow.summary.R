@@ -1,22 +1,20 @@
 
 #' Summarizing simulation study results
 #'
-#' Bayesian adaptive design proposed by Psioda (2018) is implemented, where
-#' historical control data is incorporated at interim decision. The binary
-#' outcome is applicable.
+#' Simulation study results are summarized.
 #' @usage
 #' iaborrow.summary(
 #'   n.CT, n.CC, n.CT1, n.CC1, ndrift,
 #'   w, p1, p2, r1, r2,
 #'   w0, accept.t1e=0.1, accept.pow=0.7)
 #' @param n.CT Number of patients in concurrent treatment at final analysis
-#' occasion.
+#' opportunity.
 #' @param n.CC Number of patients in concurrent control at final analysis
-#' occasion.
+#' opportunity.
 #' @param n.CT1 Number of patients in concurrent treatment at interim analysis
-#' occasion.
+#' opportunity.
 #' @param n.CC1 Number of patients in concurrent control at interim analysis
-#' occasion.
+#' opportunity.
 #' @param ndrift Number of drift scenarios.
 #' @param w Likelihood ratio statistics.
 #' @param p1 Probability meeting that the treatment effect is above 0
@@ -25,26 +23,15 @@
 #' @param p2 Probability meeting that the treatment effect is above 0
 #' (if \code{alternative="greater"}) or below 0 (if \code{alternative="less"})
 #' at final analysis occasion.
-#' @param r1 Reject the null hypothesis at interim analysis occasion.
-#' @param r2 Reject the null hypothesis at final analysis occasion.
-#' @return
-#' \item{sig.rate}{Reject rate.}
-#' \item{max.t1e}{Type I error at every \code{w0}}
-#' \item{min.pow}{Power at every \code{w0}}
-#' \item{stop.rate}{Stoppage probability at every \code{w0}.}
-#' \item{w0.opt}{Optimal value of \code{w0}.}
-#' \item{t1e}{Type I error rate at optimal value of \code{w0}.}
-#' \item{stop.null}{Stoppage probability at optimal value of \code{w0} under
-#' null hypothesis.}
-#' \item{exp.size.null}{Expected total sample size under null hypothesis.}
-#' \item{pow}{Power at optimal value of \code{w0}.}
-#' \item{stop.alt}{Stoppage probability at optimal value of \code{w0} under
-#' alternative hypothesis.}
-#' \item{exp.size.alt}{Expected total sample size under alternative hypothesis.}
-#' @references
-#' Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design
-#' incorporating data from historical controls *Statistics in Medicine*
-#' 2018; 37:4054-4070.
+#' @param r1 \code{TRUE} when significant at interim analysis opportunity;
+#' otherwise \code{FALSE}.
+#' @param r2 \code{TRUE} when significant at final analysis opportunity;
+#' otherwise \code{FALSE}.
+#' @param w0 Candidate values of stoppage criteria.
+#' @param accept.t1e Maximum acceptable type I error rate. The default value is
+#' \code{accept.t1e=0.1}.
+#' @param accept.pow Minimum acceptable power. The default value is
+#' \code{accept.pow=0.7}.
 #' @export
 
 iaborrow.summary <- function(
