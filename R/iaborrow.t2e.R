@@ -275,20 +275,37 @@ iaborrow.t2e <- function(
           xEC_c = data.EC[censor.EC==1,-1],
           a0    = a0)
 
-        dat4 <- list(
-          nCT_o = sum(censor.CT==0),
-          nCT_c = sum(censor.CT==1),
-          nCC_o = sum(censor.CC==0),
-          nCC_c = sum(censor.CC==1),
-          p     = ncov,
-          yCT_o = data.CT[censor.CT==0,1],
-          yCT_c = data.CT[censor.CT==1,1],
-          yCC_o = data.CC[censor.CC==0,1],
-          yCC_c = data.CC[censor.CC==1,1],
-          xCT_o = data.CT[censor.CT==0,-1],
-          xCT_c = data.CT[censor.CT==1,-1],
-          xCC_o = data.CC[censor.CC==0,-1],
-          xCC_c = data.CC[censor.CC==1,-1])
+        if(sum(censor.CC==1)>0){
+
+          dat4 <- list(
+            nCT_o = sum(censor.CT==0),
+            nCT_c = sum(censor.CT==1),
+            nCC_o = sum(censor.CC==0),
+            nCC_c = sum(censor.CC==1),
+            p     = ncov,
+            yCT_o = data.CT[censor.CT==0,1],
+            yCT_c = data.CT[censor.CT==1,1],
+            yCC_o = data.CC[censor.CC==0,1],
+            yCC_c = data.CC[censor.CC==1,1],
+            xCT_o = data.CT[censor.CT==0,-1],
+            xCT_c = data.CT[censor.CT==1,-1],
+            xCC_o = data.CC[censor.CC==0,-1],
+            xCC_c = data.CC[censor.CC==1,-1])
+
+        }else if(sum(censor.CC==1)==0){
+
+          dat4 <- list(
+            nCT_o = sum(censor.CT==0),
+            nCT_c = sum(censor.CT==1),
+            nCC_o = sum(censor.CC==0),
+            p     = ncov,
+            yCT_o = data.CT[censor.CT==0,1],
+            yCT_c = data.CT[censor.CT==1,1],
+            yCC_o = data.CC[censor.CC==0,1],
+            xCT_o = data.CT[censor.CT==0,-1],
+            xCT_c = data.CT[censor.CT==1,-1],
+            xCC_o = data.CC[censor.CC==0,-1])
+        }
 
         mcmc1 <- rstan::sampling(stanmodels$T2EConcurrent,
                                  data          = dat1,
@@ -323,16 +340,33 @@ iaborrow.t2e <- function(
                                  refresh       = 0)
         mcmc3.sample <- rstan::extract(mcmc3)
 
-        mcmc4 <- rstan::sampling(stanmodels$T2EConcurrent,
-                                 data          = dat4,
-                                 chains        = chains,
-                                 iter          = iter,
-                                 warmup        = warmup,
-                                 thin          = thin,
-                                 show_messages = FALSE,
-                                 cores         = 1,
-                                 refresh       = 0)
-        mcmc4.sample <- rstan::extract(mcmc4)
+        if(sum(censor.CC==1)>0){
+
+          mcmc4 <- rstan::sampling(stanmodels$T2EConcurrent,
+                                   data          = dat4,
+                                   chains        = chains,
+                                   iter          = iter,
+                                   warmup        = warmup,
+                                   thin          = thin,
+                                   show_messages = FALSE,
+                                   cores         = 1,
+                                   refresh       = 0)
+          mcmc4.sample <- rstan::extract(mcmc4)
+
+        }else if(sum(censor.CC==1)==0){
+
+          mcmc4 <- rstan::sampling(stanmodels$T2EConcurrentC0,
+                                   data          = dat4,
+                                   chains        = chains,
+                                   iter          = iter,
+                                   warmup        = warmup,
+                                   thin          = thin,
+                                   show_messages = FALSE,
+                                   cores         = 1,
+                                   refresh       = 0)
+          mcmc4.sample <- rstan::extract(mcmc4)
+
+        }
 
         hat.gammaCC0 <- median(mcmc2.sample$gammaCC)
         hat.beta0    <- apply(mcmc2.sample$beta,2,median)
