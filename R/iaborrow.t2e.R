@@ -234,23 +234,23 @@ iaborrow.t2e <- function(
           nCC_o = sum(censor.CC1==0),
           nCC_c = sum(censor.CC1==1),
           p     = ncov,
-          yCT_o = data.CT1[censor.CT1==0,1],
-          yCT_c = data.CT1[censor.CT1==1,1],
-          yCC_o = data.CC1[censor.CC1==0,1],
-          yCC_c = data.CC1[censor.CC1==1,1],
-          xCT_o = data.CT1[censor.CT1==0,-1],
-          xCT_c = data.CT1[censor.CT1==1,-1],
-          xCC_o = data.CC1[censor.CC1==0,-1],
-          xCC_c = data.CC1[censor.CC1==1,-1])
+          yCT_o = as.array(data.CT1[censor.CT1==0,1]),
+          yCT_c = as.array(data.CT1[censor.CT1==1,1]),
+          yCC_o = as.array(data.CC1[censor.CC1==0,1]),
+          yCC_c = as.array(data.CC1[censor.CC1==1,1]),
+          xCT_o = matrix(data.CT1[censor.CT1==0,-1],sum(censor.CT1==0),ncov),
+          xCT_c = matrix(data.CT1[censor.CT1==1,-1],sum(censor.CT1==1),ncov),
+          xCC_o = matrix(data.CC1[censor.CC1==0,-1],sum(censor.CC1==0),ncov),
+          xCC_c = matrix(data.CC1[censor.CC1==1,-1],sum(censor.CC1==1),ncov))
 
         dat2 <- list(
           nEC_o = sum(censor.EC==0),
           nEC_c = sum(censor.EC==1),
           p     = ncov,
-          yEC_o = data.EC[censor.EC==0,1],
-          yEC_c = data.EC[censor.EC==1,1],
-          xEC_o = data.EC[censor.EC==0,-1],
-          xEC_c = data.EC[censor.EC==1,-1],
+          yEC_o = as.array(data.EC[censor.EC==0,1]),
+          yEC_c = as.array(data.EC[censor.EC==1,1]),
+          xEC_o = matrix(data.EC[censor.EC==0,-1],sum(censor.EC==0),ncov),
+          xEC_c = matrix(data.EC[censor.EC==1,-1],sum(censor.EC==1),ncov),
           a0    = a0)
 
         dat3 <- list(
@@ -261,18 +261,18 @@ iaborrow.t2e <- function(
           nEC_o = sum(censor.EC==0),
           nEC_c = sum(censor.EC==1),
           p     = ncov,
-          yCT_o = data.CT1[censor.CT1==0,1],
-          yCT_c = data.CT1[censor.CT1==1,1],
-          yCC_o = data.CC1[censor.CC1==0,1],
-          yCC_c = data.CC1[censor.CC1==1,1],
-          yEC_o = data.EC[censor.EC==0,1],
-          yEC_c = data.EC[censor.EC==1,1],
-          xCT_o = data.CT1[censor.CT1==0,-1],
-          xCT_c = data.CT1[censor.CT1==1,-1],
-          xCC_o = data.CC1[censor.CC1==0,-1],
-          xCC_c = data.CC1[censor.CC1==1,-1],
-          xEC_o = data.EC[censor.EC==0,-1],
-          xEC_c = data.EC[censor.EC==1,-1],
+          yCT_o = as.array(data.CT1[censor.CT1==0,1]),
+          yCT_c = as.array(data.CT1[censor.CT1==1,1]),
+          yCC_o = as.array(data.CC1[censor.CC1==0,1]),
+          yCC_c = as.array(data.CC1[censor.CC1==1,1]),
+          yEC_o = as.array(data.EC[censor.EC==0,1]),
+          yEC_c = as.array(data.EC[censor.EC==1,1]),
+          xCT_o = matrix(data.CT1[censor.CT1==0,-1],sum(censor.CT1==0),ncov),
+          xCT_c = matrix(data.CT1[censor.CT1==1,-1],sum(censor.CT1==1),ncov),
+          xCC_o = matrix(data.CC1[censor.CC1==0,-1],sum(censor.CC1==0),ncov),
+          xCC_c = matrix(data.CC1[censor.CC1==1,-1],sum(censor.CC1==1),ncov),
+          xEC_o = matrix(data.EC[censor.EC==0,-1],sum(censor.EC==0),ncov),
+          xEC_c = matrix(data.EC[censor.EC==1,-1],sum(censor.EC==1),ncov),
           a0    = a0)
 
         if(sum(censor.CC==1)>0){
@@ -283,14 +283,14 @@ iaborrow.t2e <- function(
             nCC_o = sum(censor.CC==0),
             nCC_c = sum(censor.CC==1),
             p     = ncov,
-            yCT_o = data.CT[censor.CT==0,1],
-            yCT_c = data.CT[censor.CT==1,1],
-            yCC_o = data.CC[censor.CC==0,1],
-            yCC_c = data.CC[censor.CC==1,1],
-            xCT_o = data.CT[censor.CT==0,-1],
-            xCT_c = data.CT[censor.CT==1,-1],
-            xCC_o = data.CC[censor.CC==0,-1],
-            xCC_c = data.CC[censor.CC==1,-1])
+            yCT_o = as.array(data.CT[censor.CT==0,1]),
+            yCT_c = as.array(data.CT[censor.CT==1,1]),
+            yCC_o = as.array(data.CC[censor.CC==0,1]),
+            yCC_c = as.array(data.CC[censor.CC==1,1]),
+            xCT_o = matrix(data.CT[censor.CT==0,-1],sum(censor.CT==0),ncov),
+            xCT_c = matrix(data.CT[censor.CT==1,-1],sum(censor.CT==1),ncov),
+            xCC_o = matrix(data.CC[censor.CC==0,-1],sum(censor.CC==0),ncov),
+            xCC_c = matrix(data.CC[censor.CC==1,-1],sum(censor.CC==1),ncov))
 
         }else if(sum(censor.CC==1)==0){
 
@@ -299,12 +299,12 @@ iaborrow.t2e <- function(
             nCT_c = sum(censor.CT==1),
             nCC_o = sum(censor.CC==0),
             p     = ncov,
-            yCT_o = data.CT[censor.CT==0,1],
-            yCT_c = data.CT[censor.CT==1,1],
-            yCC_o = data.CC[censor.CC==0,1],
-            xCT_o = data.CT[censor.CT==0,-1],
-            xCT_c = data.CT[censor.CT==1,-1],
-            xCC_o = data.CC[censor.CC==0,-1])
+            yCT_o = as.array(data.CT[censor.CT==0,1]),
+            yCT_c = as.array(data.CT[censor.CT==1,1]),
+            yCC_o = as.array(data.CC[censor.CC==0,1]),
+            xCT_o = matrix(data.CT[censor.CT==0,-1],sum(censor.CT==0),ncov),
+            xCT_c = matrix(data.CT[censor.CT==1,-1],sum(censor.CT==1),ncov),
+            xCC_o = matrix(data.CC[censor.CC==0,-1],sum(censor.CC==0),ncov))
         }
 
         mcmc1 <- rstan::sampling(stanmodels$T2EConcurrent,
