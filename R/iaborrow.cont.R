@@ -9,9 +9,10 @@
 #' iaborrow.cont(
 #'   n.CT, n.CC, n.EC, n.CT1, n.CC1,
 #'   out.mean.CT, out.sd.CT, out.mean.CC, out.sd.CC, driftdiff, out.sd.EC,
-#'   cov.CT, cov.CC, cov.EC, cormat,
+#'   cov.C, cov.cor.C, cov.effect.C,
+#'   cov.E, cov.cor.E, cov.effect.E,
 #'   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-#'   a0, alternative="greater", sig.level=0.025, nsim=10)
+#'   a0, alternative="greater", sig.level=0.025, nsim)
 #' @param n.CT Number of patients in concurrent treatment at final analysis
 #' opportunity.
 #' @param n.CC Number of patients in concurrent control at final analysis
@@ -28,14 +29,18 @@
 #' @param driftdiff Difference between external control and concurrent control
 #' for which the bias should be plotted.
 #' @param out.sd.EC True sd of outcome in external control.
-#' @param cov.CT List of covariates in concurrent treatment. Distribution and
+#' @param cov.C List of covariates in concurrent data. Distribution and
 #' and its parameters need to be specified for each covariate.
-#' @param cov.CC List of covariates in concurrent control. Distribution and
+#' @param cov.cor.C Matrix of correlation coefficients for covariates in
+#' concurrent data, specified as Gaussian copula parameter.
+#' @param cov.effect.C Vector of covariate effects in concurrent data,
+#' specified as mean difference.
+#' @param cov.E List of covariates in external data. Distribution and
 #' and its parameters need to be specified for each covariate.
-#' @param cov.EC List of covariates in historical control. Distribution and
-#' and its parameters need to be specified for each covariate.
-#' @param cormat Matrix of correlation coefficients for outcome and covariates,
-#' specified as Gaussian copula parameter.
+#' @param cov.cor.E Matrix of correlation coefficients for covariates in
+#' external data, specified as Gaussian copula parameter.
+#' @param cov.effect.E Vector of covariate effects in external data,
+#' specified as mean difference.
 #' @param chains Number of Markov chains in MCMC sampling. The default value is
 #' \code{chains=2}.
 #' @param iter Number of iterations for each chain (including warmup) in MCMC
@@ -80,46 +85,80 @@
 #' driftdiff   <- c(-0.2,0.0,0.2)
 #' out.sd.EC   <- 1
 #'
-#' cov.CT <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.C <- list(list(dist="norm", mean=0,sd=1),
+#'               list(dist="binom",prob=0.4))
 #'
-#' cov.CC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.cor.C <- rbind(c(  1,0.1),
+#'                    c(0.1,  1))
 #'
-#' cov.EC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.effect.C <- c(0.1,0.1)
 #'
-#' cormat <- rbind(c(  1,0.1,0.1),
-#'                 c(0.1,  1,0.1),
-#'                 c(0.1,0.1,  1))
+#' cov.E <- list(list(dist="norm", mean=0,sd=1),
+#'               list(dist="binom",prob=0.4))
+#'
+#' cov.cor.E <- rbind(c(  1,0.1),
+#'                    c(0.1,  1))
+#'
+#' cov.effect.E <- c(0.1,0.1)
 #'
 #' a0 <- 0.5
+#'
+#' nsim <- 10
 #'
 #' iaborrow.cont(
 #'   n.CT=n.CT, n.CC=n.CC, n.EC=n.EC, n.CT1=n.CT1, n.CC1=n.CC1,
 #'   out.mean.CT=out.mean.CT, out.sd.CT=out.sd.CT,
 #'   out.mean.CC=out.mean.CC, out.sd.CC=out.sd.CC,
 #'   driftdiff=driftdiff, out.sd.EC=out.sd.EC,
-#'   cov.CT=cov.CT, cov.CC=cov.CC, cov.EC=cov.EC, cormat=cormat,
-#'   a0=a0)
+#'   cov.C=cov.C, cov.cor.C=cov.cor.C, cov.effect.C=cov.effect.C,
+#'   cov.E=cov.E, cov.cor.E=cov.cor.E, cov.effect.E=cov.effect.E,
+#'   a0=a0, nsim=nsim)
 #' @import rstan
 #' @export
 
 iaborrow.cont <- function(
   n.CT, n.CC, n.EC, n.CT1, n.CC1,
   out.mean.CT, out.sd.CT, out.mean.CC, out.sd.CC, driftdiff, out.sd.EC,
-  cov.CT, cov.CC, cov.EC, cormat,
+  cov.C, cov.cor.C, cov.effect.C,
+  cov.E, cov.cor.E, cov.effect.E,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.025, nsim=10)
+  a0, alternative="greater", sig.level=0.025, nsim)
 {
-  n.CT2 <- n.CT-n.CT1
-  n.CC2 <- n.CC-n.CC1
-  ncov  <- length(cov.CT)
-
+  n.CT2       <- n.CT-n.CT1
+  n.CC2       <- n.CC-n.CC1
+  ncov        <- length(cov.C)
   out.mean.EC <- driftdiff+out.mean.CC
 
   ls1 <- length(out.mean.EC)
   ls2 <- length(out.mean.CT)
+
+  marg.C <- NULL
+  marg.E <- NULL
+  mean.C <- NULL
+  mean.E <- NULL
+
+  for(i in 1:ncov){
+    if(cov.C[[i]]$dist=="norm"){
+      marg.C <- append(marg.C,list(list(dist=cov.C[[i]]$dist,parm=list(mean=cov.C[[i]]$mean,sd=cov.C[[i]]$sd))))
+      marg.E <- append(marg.E,list(list(dist=cov.E[[i]]$dist,parm=list(mean=cov.E[[i]]$mean,sd=cov.E[[i]]$sd))))
+
+      mean.C <- c(mean.C,cov.C[[i]]$mean)
+      mean.E <- c(mean.E,cov.E[[i]]$mean)
+    }else if(cov.C[[i]]$dist=="binom"){
+      marg.C <- append(marg.C,list(list(dist=cov.C[[i]]$dist,parm=list(size=1,prob=cov.C[[i]]$prob))))
+      marg.E <- append(marg.E,list(list(dist=cov.E[[i]]$dist,parm=list(size=1,prob=cov.E[[i]]$prob))))
+
+      mean.C <- c(mean.C,cov.C[[i]]$prob)
+      mean.E <- c(mean.E,cov.E[[i]]$prob)
+    }
+  }
+
+  int.C   <- out.mean.CC-sum(mean.C*cov.effect.C)
+  int.E   <- out.mean.EC-sum(mean.E*cov.effect.E)
+  t.theta <- out.mean.CT-out.mean.CC
+
+  cvec.C  <- cov.cor.C[lower.tri(cov.cor.C)]
+  cvec.E  <- cov.cor.E[lower.tri(cov.cor.E)]
 
   w  <- array(0,dim=c(nsim,ls1,ls2))
   p1 <- array(0,dim=c(nsim,ls1,ls2))
@@ -129,31 +168,27 @@ iaborrow.cont <- function(
     for(s1 in 1:ls1){
       for(s2 in 1:ls2){
 
-        marg.CT <- list(list(dist="norm",parm=list(mean=out.mean.CT[s2],sd=out.sd.CT)))
-        marg.CC <- list(list(dist="norm",parm=list(mean=out.mean.CC    ,sd=out.sd.CC)))
-        marg.EC <- list(list(dist="norm",parm=list(mean=out.mean.EC[s1],sd=out.sd.EC)))
+        data.cov.CT1 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CT1)
+        data.cov.CC1 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC1)
+        data.cov.CT2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CT2)
+        data.cov.CC2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC2)
 
-        for(i in 1:ncov){
-          if(cov.CT[[i]]$dist=="norm"){
-            marg.CT <- append(marg.CT,list(list(dist=cov.CT[[i]]$dist,parm=list(mean=cov.CT[[i]]$mean,sd=cov.CT[[i]]$sd))))
-            marg.CC <- append(marg.CC,list(list(dist=cov.CC[[i]]$dist,parm=list(mean=cov.CC[[i]]$mean,sd=cov.CC[[i]]$sd))))
-            marg.EC <- append(marg.EC,list(list(dist=cov.EC[[i]]$dist,parm=list(mean=cov.EC[[i]]$mean,sd=cov.EC[[i]]$sd))))
-          }else if(cov.CT[[i]]$dist=="binom"){
-            marg.CT <- append(marg.CT,list(list(dist=cov.CT[[i]]$dist,parm=list(size=1,prob=cov.CT[[i]]$prob))))
-            marg.CC <- append(marg.CC,list(list(dist=cov.CC[[i]]$dist,parm=list(size=1,prob=cov.CC[[i]]$prob))))
-            marg.EC <- append(marg.EC,list(list(dist=cov.EC[[i]]$dist,parm=list(size=1,prob=cov.EC[[i]]$prob))))
-          }
-        }
+        mu.CT1 <- int.C+t.theta+apply(data.cov.CT1,1,function(x){sum(x*cov.effect.C)})
+        mu.CC1 <- int.C        +apply(data.cov.CC1,1,function(x){sum(x*cov.effect.C)})
+        mu.CT2 <- int.C+t.theta+apply(data.cov.CT2,1,function(x){sum(x*cov.effect.C)})
+        mu.CC2 <- int.C        +apply(data.cov.CC2,1,function(x){sum(x*cov.effect.C)})
 
-        cvec <- cormat[lower.tri(cormat)]
-        data.CT1 <- datagen(margdist=marg.CT,corvec=cvec,nsim=n.CT1)
-        data.CC1 <- datagen(margdist=marg.CC,corvec=cvec,nsim=n.CC1)
-        data.CT2 <- datagen(margdist=marg.CT,corvec=cvec,nsim=n.CT2)
-        data.CC2 <- datagen(margdist=marg.CC,corvec=cvec,nsim=n.CC2)
+        data.CT1 <- cbind(rnorm(n.CT1,mean=mu.CT1,sd=out.sd.CT),data.cov.CT1)
+        data.CC1 <- cbind(rnorm(n.CC1,mean=mu.CC1,sd=out.sd.CC),data.cov.CC1)
+        data.CT2 <- cbind(rnorm(n.CT2,mean=mu.CT2,sd=out.sd.CT),data.cov.CT2)
+        data.CC2 <- cbind(rnorm(n.CC2,mean=mu.CC2,sd=out.sd.CC),data.cov.CC2)
 
         data.CT <- rbind(data.CT1,data.CT2)
         data.CC <- rbind(data.CC1,data.CC2)
-        data.EC <- datagen(margdist=marg.EC,corvec=cvec,nsim=n.EC)
+
+        data.cov.EC <- datagen(margdist=marg.E,corvec=cvec.E,nsim=n.EC)
+        mu.EC       <- int.E+apply(data.cov.EC,1,function(x){sum(x*cov.effect.E)})
+        data.EC     <- cbind(rnorm(n.EC,mean=mu.EC,sd=out.sd.EC),data.cov.EC)
 
         dat1 <- list(
           nCT = n.CT1,

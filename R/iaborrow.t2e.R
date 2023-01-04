@@ -9,9 +9,10 @@
 #' iaborrow.t2e(
 #'   n.CT, n.CC, nevent.C, n.EC, nevent.E, nevent.C1, accrual,
 #'   out.mevent.CT, out.mevent.CC, driftHR,
-#'   cov.CT, cov.CC, cov.EC, cormat,
+#'   cov.C, cov.cor.C, cov.effect.C,
+#'   cov.E, cov.cor.E, cov.effect.E,
 #'   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-#'   a0, alternative="greater", sig.level=0.025, nsim=10)
+#'   a0, alternative="greater", sig.level=0.025, nsim)
 #' @param n.CT Number of patients in concurrent treatment at final analysis
 #' opportunity.
 #' @param n.CC Number of patients in concurrent control at final analysis
@@ -27,14 +28,18 @@
 #' @param out.mevent.CC True median time to event in concurrent control.
 #' @param driftHR Hazard ratio between external control and concurrent control
 #' for which the bias should be plotted.
-#' @param cov.CT List of covariates in concurrent treatment. Distribution and
+#' @param cov.C List of covariates in concurrent data. Distribution and
 #' and its parameters need to be specified for each covariate.
-#' @param cov.CC List of covariates in concurrent control. Distribution and
+#' @param cov.cor.C Matrix of correlation coefficients for covariates in
+#' concurrent data, specified as Gaussian copula parameter.
+#' @param cov.effect.C Vector of covariate effects in concurrent data,
+#' specified as hazard ratio.
+#' @param cov.E List of covariates in external data. Distribution and
 #' and its parameters need to be specified for each covariate.
-#' @param cov.EC List of covariates in historical control. Distribution and
-#' and its parameters need to be specified for each covariate.
-#' @param cormat Matrix of correlation coefficients for outcome and covariates,
-#' specified as Gaussian copula parameter.
+#' @param cov.cor.E Matrix of correlation coefficients for covariates in
+#' external data, specified as Gaussian copula parameter.
+#' @param cov.effect.E Vector of covariate effects in external data,
+#' specified as hazard ratio.
 #' @param chains Number of Markov chains in MCMC sampling. The default value is
 #' \code{chains=2}.
 #' @param iter Number of iterations for each chain (including warmup) in MCMC
@@ -87,45 +92,82 @@
 #' out.mevent.CC <- 6
 #' driftHR       <- c(0.8,1.0,1.2)
 #'
-#' cov.CT <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.C <- list(list(dist="norm", mean=0,sd=1),
+#'               list(dist="binom",prob=0.4))
 #'
-#' cov.CC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.cor.C <- rbind(c(  1,0.1),
+#'                    c(0.1,  1))
 #'
-#' cov.EC <- list(list(dist="norm", mean=0,sd=1),
-#'                list(dist="binom",prob=0.4))
+#' cov.effect.C <- c(0.1,0.1)
 #'
-#' cormat <- rbind(c(  1,0.1,0.1),
-#'                 c(0.1,  1,0.1),
-#'                 c(0.1,0.1,  1))
+#' cov.E <- list(list(dist="norm", mean=0,sd=1),
+#'               list(dist="binom",prob=0.4))
+#'
+#' cov.cor.E <- rbind(c(  1,0.1),
+#'                    c(0.1,  1))
+#'
+#' cov.effect.E <- c(0.1,0.1)
 #'
 #' a0 <- 0.5
+#'
+#' nsim <- 10
 #'
 #' iaborrow.t2e(
 #'   n.CT=n.CT, n.CC=n.CC, nevent.C=nevent.C,
 #'   n.EC=n.EC, nevent.E=nevent.E, nevent.C1=nevent.C1, accrual=accrual,
 #'   out.mevent.CT=out.mevent.CT, out.mevent.CC=out.mevent.CC, driftHR=driftHR,
-#'   cov.CT=cov.CT, cov.CC=cov.CC, cov.EC=cov.EC, cormat=cormat,
-#'   a0=a0)
+#'   cov.C=cov.C, cov.cor.C=cov.cor.C, cov.effect.C=cov.effect.C,
+#'   cov.E=cov.E, cov.cor.E=cov.cor.E, cov.effect.E=cov.effect.E,
+#'   a0=a0, alternative="less", nsim=nsim)
 #' @import rstan
 #' @export
 
 iaborrow.t2e <- function(
   n.CT, n.CC, nevent.C, n.EC, nevent.E, nevent.C1, accrual,
   out.mevent.CT, out.mevent.CC, driftHR,
-  cov.CT, cov.CC, cov.EC, cormat,
+  cov.C, cov.cor.C, cov.effect.C,
+  cov.E, cov.cor.E, cov.effect.E,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.025, nsim=10)
+  a0, alternative="greater", sig.level=0.025, nsim)
 {
-  ncov  <- length(cov.CT)
-
+  ncov          <- length(cov.C)
   out.lambda.CT <- log(2)/out.mevent.CT
   out.lambda.CC <- log(2)/out.mevent.CC
-  out.lambda.EC <- out.lambda.CC/driftHR
+  out.lambda.EC <- out.lambda.CC*driftHR
 
   ls1 <- length(out.lambda.EC)
   ls2 <- length(out.lambda.CT)
+
+  lcov.effect.C <- (-log(cov.effect.C))
+  lcov.effect.E <- (-log(cov.effect.E))
+
+  marg.C <- NULL
+  marg.E <- NULL
+  mean.C <- NULL
+  mean.E <- NULL
+
+  for(i in 1:ncov){
+    if(cov.C[[i]]$dist=="norm"){
+      marg.C <- append(marg.C,list(list(dist=cov.C[[i]]$dist,parm=list(mean=cov.C[[i]]$mean,sd=cov.C[[i]]$sd))))
+      marg.E <- append(marg.E,list(list(dist=cov.E[[i]]$dist,parm=list(mean=cov.E[[i]]$mean,sd=cov.E[[i]]$sd))))
+
+      mean.C <- c(mean.C,cov.C[[i]]$mean)
+      mean.E <- c(mean.E,cov.E[[i]]$mean)
+    }else if(cov.C[[i]]$dist=="binom"){
+      marg.C <- append(marg.C,list(list(dist=cov.C[[i]]$dist,parm=list(size=1,prob=cov.C[[i]]$prob))))
+      marg.E <- append(marg.E,list(list(dist=cov.E[[i]]$dist,parm=list(size=1,prob=cov.E[[i]]$prob))))
+
+      mean.C <- c(mean.C,cov.C[[i]]$prob)
+      mean.E <- c(mean.E,cov.E[[i]]$prob)
+    }
+  }
+
+  int.C   <- log(1/out.lambda.CC)-sum(mean.C*lcov.effect.C)
+  int.E   <- log(1/out.lambda.EC)-sum(mean.E*lcov.effect.E)
+  t.theta <- log(out.lambda.CC/out.lambda.CT)
+
+  cvec.C  <- cov.cor.C[lower.tri(cov.cor.C)]
+  cvec.E  <- cov.cor.E[lower.tri(cov.cor.E)]
 
   w     <- array(0,dim=c(nsim,ls1,ls2))
   p1    <- array(0,dim=c(nsim,ls1,ls2))
@@ -137,26 +179,17 @@ iaborrow.t2e <- function(
     for(s1 in 1:ls1){
       for(s2 in 1:ls2){
 
-        marg.CT <- list(list(dist="exp",parm=list(rate=out.lambda.CT[s2])))
-        marg.CC <- list(list(dist="exp",parm=list(rate=out.lambda.CC)))
-        marg.EC <- list(list(dist="exp",parm=list(rate=out.lambda.EC[s1])))
+        data.cov.CT <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CT)
+        data.cov.CC <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC)
+        data.cov.EC <- datagen(margdist=marg.E,corvec=cvec.E,nsim=n.EC)
 
-        for(i in 1:ncov){
-          if(cov.CT[[i]]$dist=="norm"){
-            marg.CT <- append(marg.CT,list(list(dist=cov.CT[[i]]$dist,parm=list(mean=cov.CT[[i]]$mean,sd=cov.CT[[i]]$sd))))
-            marg.CC <- append(marg.CC,list(list(dist=cov.CC[[i]]$dist,parm=list(mean=cov.CC[[i]]$mean,sd=cov.CC[[i]]$sd))))
-            marg.EC <- append(marg.EC,list(list(dist=cov.EC[[i]]$dist,parm=list(mean=cov.EC[[i]]$mean,sd=cov.EC[[i]]$sd))))
-          }else if(cov.CT[[i]]$dist=="binom"){
-            marg.CT <- append(marg.CT,list(list(dist=cov.CT[[i]]$dist,parm=list(size=1,prob=cov.CT[[i]]$prob))))
-            marg.CC <- append(marg.CC,list(list(dist=cov.CC[[i]]$dist,parm=list(size=1,prob=cov.CC[[i]]$prob))))
-            marg.EC <- append(marg.EC,list(list(dist=cov.EC[[i]]$dist,parm=list(size=1,prob=cov.EC[[i]]$prob))))
-          }
-        }
+        sigma.CT <- exp(int.C+t.theta+apply(data.cov.CT,1,function(x){sum(x*lcov.effect.C)}))
+        sigma.CC <- exp(int.C        +apply(data.cov.CC,1,function(x){sum(x*lcov.effect.C)}))
+        sigma.EC <- exp(int.E        +apply(data.cov.EC,1,function(x){sum(x*lcov.effect.E)}))
 
-        cvec <- cormat[lower.tri(cormat)]
-        data.CT <- datagen(margdist=marg.CT,corvec=cvec,nsim=n.CT)
-        data.CC <- datagen(margdist=marg.CC,corvec=cvec,nsim=n.CC)
-        data.EC <- datagen(margdist=marg.EC,corvec=cvec,nsim=n.EC)
+        data.CT <- cbind(rweibull(n.CT,shape=1,scale=sigma.CT),data.cov.CT)
+        data.CC <- cbind(rweibull(n.CC,shape=1,scale=sigma.CC),data.cov.CC)
+        data.EC <- cbind(rweibull(n.EC,shape=1,scale=sigma.EC),data.cov.EC)
 
         enroll.period.C <- floor((n.CT+n.CC)/accrual)
         mn.CT <- floor(n.CT/enroll.period.C)
@@ -413,12 +446,15 @@ iaborrow.t2e <- function(
                         -   sum(c(log(dweibull(c(dat1$yCT_o,dat1$yCC_o),alpha3,m3_o)),log(pweibull(c(dat1$yCT_c,dat1$yCC_c),alpha3,m3_c,lower.tail=FALSE))))
                         -a0*sum(c(log(dweibull(c(dat2$yEC_o),           alpha4,m4_o)),log(pweibull(c(dat2$yEC_c),           alpha4,m4_c,lower.tail=FALSE)))))
 
+        loghr3 <- (-mcmc3.sample$alpha*mcmc3.sample$theta)
+        loghr4 <- (-mcmc4.sample$alpha*mcmc4.sample$theta)
+
         if(alternative=="greater"){
-          p1[ss,s1,s2] <- mean(mcmc3.sample$theta>0)
-          p2[ss,s1,s2] <- mean(mcmc4.sample$theta>0)
+          p1[ss,s1,s2] <- mean(loghr3>0)
+          p2[ss,s1,s2] <- mean(loghr4>0)
         }else if(alternative=="less"){
-          p1[ss,s1,s2] <- mean(mcmc3.sample$theta<0)
-          p2[ss,s1,s2] <- mean(mcmc4.sample$theta<0)
+          p1[ss,s1,s2] <- mean(loghr3<0)
+          p2[ss,s1,s2] <- mean(loghr4<0)
         }
 
         n.CT[ss,s1,s2]  <- nrow(data.CT)
