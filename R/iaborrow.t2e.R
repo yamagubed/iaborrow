@@ -169,11 +169,14 @@ iaborrow.t2e <- function(
   cvec.C  <- cov.cor.C[lower.tri(cov.cor.C)]
   cvec.E  <- cov.cor.E[lower.tri(cov.cor.E)]
 
-  w     <- array(0,dim=c(nsim,ls1,ls2))
-  p1    <- array(0,dim=c(nsim,ls1,ls2))
-  p2    <- array(0,dim=c(nsim,ls1,ls2))
-  n.CT1 <- array(0,dim=c(nsim,ls1,ls2))
-  n.CC1 <- array(0,dim=c(nsim,ls1,ls2))
+  w        <- array(0,dim=c(nsim,ls1,ls2))
+  p1       <- array(0,dim=c(nsim,ls1,ls2))
+  p2       <- array(0,dim=c(nsim,ls1,ls2))
+  n.CT.all <- array(0,dim=c(nsim,ls1,ls2))
+  n.CT1    <- array(0,dim=c(nsim,ls1,ls2))
+  n.CC.all <- array(0,dim=c(nsim,ls1,ls2))
+  n.CC1    <- array(0,dim=c(nsim,ls1,ls2))
+  n.EC.all <- array(0,dim=c(nsim,ls1,ls2))
 
   for(ss in 1:nsim){
     for(s1 in 1:ls1){
@@ -457,19 +460,18 @@ iaborrow.t2e <- function(
           p2[ss,s1,s2] <- mean(loghr4<0)
         }
 
-        n.CT[ss,s1,s2]  <- nrow(data.CT)
-        n.CT1[ss,s1,s2] <- nrow(data.CT1)
-
-        n.CC[ss,s1,s2]  <- nrow(data.CC)
-        n.CC1[ss,s1,s2] <- nrow(data.CC1)
-
-        n.EC[ss,s1,s2]  <- nrow(data.EC)
+        n.CT.all[ss,s1,s2] <- nrow(data.CT)
+        n.CT1[ss,s1,s2]    <- nrow(data.CT1)
+        n.CC.all[ss,s1,s2] <- nrow(data.CC)
+        n.CC1[ss,s1,s2]    <- nrow(data.CC1)
+        n.EC.all[ss,s1,s2] <- nrow(data.EC)
   }}}
 
   r1 <- (p1>(1-sig.level))
   r2 <- (p2>(1-sig.level))
 
   return(list(w=w,p1=p1,p2=p2,r1=r1,r2=r2,
-              n.CT=n.CT,n.CT1=n.CT1,
-              n.CC=n.CC,n.CC1=n.CC1,n.EC=n.EC))
+              n.CT=n.CT.all,n.CT1=n.CT1,
+              n.CC=n.CC.all,n.CC1=n.CC1,
+              n.EC=n.EC.all))
 }
