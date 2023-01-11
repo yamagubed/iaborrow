@@ -168,10 +168,10 @@ iaborrow.bin <- function(
         data.cov.CT2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CT2)
         data.cov.CC2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC2)
 
-        p.CT1 <- boot::inv.logit(int.C+t.theta+apply(data.cov.CT1,1,function(x){sum(x*lcov.effect.C)}))
-        p.CC1 <- boot::inv.logit(int.C        +apply(data.cov.CC1,1,function(x){sum(x*lcov.effect.C)}))
-        p.CT2 <- boot::inv.logit(int.C+t.theta+apply(data.cov.CT2,1,function(x){sum(x*lcov.effect.C)}))
-        p.CC2 <- boot::inv.logit(int.C        +apply(data.cov.CC2,1,function(x){sum(x*lcov.effect.C)}))
+        p.CT1 <- boot::inv.logit(int.C+t.theta[s2]+apply(data.cov.CT1,1,function(x){sum(x*lcov.effect.C)}))
+        p.CC1 <- boot::inv.logit(int.C            +apply(data.cov.CC1,1,function(x){sum(x*lcov.effect.C)}))
+        p.CT2 <- boot::inv.logit(int.C+t.theta[s2]+apply(data.cov.CT2,1,function(x){sum(x*lcov.effect.C)}))
+        p.CC2 <- boot::inv.logit(int.C            +apply(data.cov.CC2,1,function(x){sum(x*lcov.effect.C)}))
 
         data.CT1 <- cbind(rbinom(n.CT1,1,p.CT1),data.cov.CT1)
         data.CC1 <- cbind(rbinom(n.CC1,1,p.CC1),data.cov.CC1)
@@ -182,7 +182,7 @@ iaborrow.bin <- function(
         data.CC <- rbind(data.CC1,data.CC2)
 
         data.cov.EC <- datagen(margdist=marg.E,corvec=cvec.E,nsim=n.EC)
-        p.EC        <- boot::inv.logit(int.E+apply(data.cov.EC,1,function(x){sum(x*lcov.effect.E)}))
+        p.EC        <- boot::inv.logit(int.E[s1]+apply(data.cov.EC,1,function(x){sum(x*lcov.effect.E)}))
         data.EC     <- cbind(rbinom(n.EC,1,p.EC),data.cov.EC)
 
         dat1 <- list(

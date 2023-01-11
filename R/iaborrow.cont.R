@@ -12,7 +12,7 @@
 #'   cov.C, cov.cor.C, cov.effect.C,
 #'   cov.E, cov.cor.E, cov.effect.E,
 #'   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-#'   a0, alternative="greater", sig.level=0.025, nsim)
+#'   a0, alternative="greater", sig.level=0.025, nsim=NULL)
 #' @param n.CT Number of patients in concurrent treatment at final analysis
 #' opportunity.
 #' @param n.CC Number of patients in concurrent control at final analysis
@@ -122,7 +122,7 @@ iaborrow.cont <- function(
   cov.C, cov.cor.C, cov.effect.C,
   cov.E, cov.cor.E, cov.effect.E,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.025, nsim)
+  a0, alternative="greater", sig.level=0.025, nsim=NULL)
 {
   n.CT2       <- n.CT-n.CT1
   n.CC2       <- n.CC-n.CC1
@@ -173,10 +173,10 @@ iaborrow.cont <- function(
         data.cov.CT2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CT2)
         data.cov.CC2 <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC2)
 
-        mu.CT1 <- int.C+t.theta+apply(data.cov.CT1,1,function(x){sum(x*cov.effect.C)})
-        mu.CC1 <- int.C        +apply(data.cov.CC1,1,function(x){sum(x*cov.effect.C)})
-        mu.CT2 <- int.C+t.theta+apply(data.cov.CT2,1,function(x){sum(x*cov.effect.C)})
-        mu.CC2 <- int.C        +apply(data.cov.CC2,1,function(x){sum(x*cov.effect.C)})
+        mu.CT1 <- int.C+t.theta[s2]+apply(data.cov.CT1,1,function(x){sum(x*cov.effect.C)})
+        mu.CC1 <- int.C            +apply(data.cov.CC1,1,function(x){sum(x*cov.effect.C)})
+        mu.CT2 <- int.C+t.theta[s2]+apply(data.cov.CT2,1,function(x){sum(x*cov.effect.C)})
+        mu.CC2 <- int.C            +apply(data.cov.CC2,1,function(x){sum(x*cov.effect.C)})
 
         data.CT1 <- cbind(rnorm(n.CT1,mean=mu.CT1,sd=out.sd.CT),data.cov.CT1)
         data.CC1 <- cbind(rnorm(n.CC1,mean=mu.CC1,sd=out.sd.CC),data.cov.CC1)
@@ -187,7 +187,7 @@ iaborrow.cont <- function(
         data.CC <- rbind(data.CC1,data.CC2)
 
         data.cov.EC <- datagen(margdist=marg.E,corvec=cvec.E,nsim=n.EC)
-        mu.EC       <- int.E+apply(data.cov.EC,1,function(x){sum(x*cov.effect.E)})
+        mu.EC       <- int.E[s1]+apply(data.cov.EC,1,function(x){sum(x*cov.effect.E)})
         data.EC     <- cbind(rnorm(n.EC,mean=mu.EC,sd=out.sd.EC),data.cov.EC)
 
         dat1 <- list(

@@ -8,9 +8,10 @@ from historical controls: binary outcome}
 iaborrow.bin(
   n.CT, n.CC, n.EC, n.CT1, n.CC1,
   out.prob.CT, out.prob.CC, driftOR,
-  cov.CT, cov.CC, cov.EC, cormat,
+  cov.C, cov.cor.C, cov.effect.C,
+  cov.E, cov.cor.E, cov.effect.E,
   chains=2, iter=4000, warmup=floor(iter/2), thin=1,
-  a0, alternative="greater", sig.level=0.025, nsim=10)
+  a0, alternative="greater", sig.level=0.025, nsim)
 }
 \arguments{
 \item{n.CT}{Number of patients in concurrent treatment at final analysis
@@ -34,17 +35,23 @@ opportunity.}
 \item{driftOR}{Odds ratio between external control and concurrent control
 for which the bias should be plotted.}
 
-\item{cov.CT}{List of covariates in concurrent treatment. Distribution and
+\item{cov.C}{List of covariates in concurrent data. Distribution and
 and its parameters need to be specified for each covariate.}
 
-\item{cov.CC}{List of covariates in concurrent control. Distribution and
+\item{cov.cor.C}{Matrix of correlation coefficients for covariates in
+concurrent data, specified as Gaussian copula parameter.}
+
+\item{cov.effect.C}{Vector of covariate effects in concurrent data,
+specified as odds ratio.}
+
+\item{cov.E}{List of covariates in external data. Distribution and
 and its parameters need to be specified for each covariate.}
 
-\item{cov.EC}{List of covariates in historical control. Distribution and
-and its parameters need to be specified for each covariate.}
+\item{cov.cor.E}{Matrix of correlation coefficients for covariates in
+external data, specified as Gaussian copula parameter.}
 
-\item{cormat}{Matrix of correlation coefficients for outcome and covariates,
-specified as Gaussian copula parameter.}
+\item{cov.effect.E}{Vector of covariate effects in external data,
+specified as odds ratio.}
 
 \item{chains}{Number of Markov chains in MCMC sampling. The default value is
 \code{chains=2}.}
@@ -97,26 +104,32 @@ out.prob.CT <- c(0.23,0.35)
 out.prob.CC <- 0.23
 driftOR     <- c(0.6,1.0,1.4)
 
-cov.CT <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.4))
+cov.C <- list(list(dist="norm", mean=0,sd=1),
+              list(dist="binom",prob=0.4))
 
-cov.CC <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.4))
+cov.cor.C <- rbind(c(  1,0.1),
+                   c(0.1,  1))
 
-cov.EC <- list(list(dist="norm", mean=0,sd=1),
-               list(dist="binom",prob=0.4))
+cov.effect.C <- c(0.1,0.1)
 
-cormat <- rbind(c(  1,0.1,0.1),
-                c(0.1,  1,0.1),
-                c(0.1,0.1,  1))
+cov.E <- list(list(dist="norm", mean=0,sd=1),
+              list(dist="binom",prob=0.4))
+
+cov.cor.E <- rbind(c(  1,0.1),
+                   c(0.1,  1))
+
+cov.effect.E <- c(0.1,0.1)
 
 a0 <- 0.5
+
+nsim <- 10
 
 iaborrow.bin(
   n.CT=n.CT, n.CC=n.CC, n.EC=n.EC, n.CT1=n.CT1, n.CC1=n.CC1,
   out.prob.CT=out.prob.CT, out.prob.CC=out.prob.CC, driftOR=driftOR,
-  cov.CT=cov.CT, cov.CC=cov.CC, cov.EC=cov.EC, cormat=cormat,
-  a0=a0)
+  cov.C=cov.C, cov.cor.C=cov.cor.C, cov.effect.C=cov.effect.C,
+  cov.E=cov.E, cov.cor.E=cov.cor.E, cov.effect.E=cov.effect.E,
+  a0=a0, nsim=nsim)
 }
 \references{
 Psioda MA, Soukup M, Ibrahim JG. A practical Bayesian adaptive design

@@ -183,9 +183,9 @@ iaborrow.t2e <- function(
         data.cov.CC <- datagen(margdist=marg.C,corvec=cvec.C,nsim=n.CC)
         data.cov.EC <- datagen(margdist=marg.E,corvec=cvec.E,nsim=n.EC)
 
-        sigma.CT <- exp(int.C+t.theta+apply(data.cov.CT,1,function(x){sum(x*lcov.effect.C)}))
-        sigma.CC <- exp(int.C        +apply(data.cov.CC,1,function(x){sum(x*lcov.effect.C)}))
-        sigma.EC <- exp(int.E        +apply(data.cov.EC,1,function(x){sum(x*lcov.effect.E)}))
+        sigma.CT <- exp(int.C    +t.theta[s2]+apply(data.cov.CT,1,function(x){sum(x*lcov.effect.C)}))
+        sigma.CC <- exp(int.C                +apply(data.cov.CC,1,function(x){sum(x*lcov.effect.C)}))
+        sigma.EC <- exp(int.E[s1]            +apply(data.cov.EC,1,function(x){sum(x*lcov.effect.E)}))
 
         data.CT <- cbind(rweibull(n.CT,shape=1,scale=sigma.CT),data.cov.CT)
         data.CC <- cbind(rweibull(n.CC,shape=1,scale=sigma.CC),data.cov.CC)
