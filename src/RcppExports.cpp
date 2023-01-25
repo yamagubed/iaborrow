@@ -19,6 +19,7 @@ RcppExport SEXP _rcpp_module_boot_stan_fit4ContConcurrent_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4ContExternal_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4ContHybrid_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4T2EConcurrent_mod();
+RcppExport SEXP _rcpp_module_boot_stan_fit4T2EConcurrentC0_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4T2EExternal_mod();
 RcppExport SEXP _rcpp_module_boot_stan_fit4T2EHybrid_mod();
 
@@ -30,6 +31,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_rcpp_module_boot_stan_fit4ContExternal_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4ContExternal_mod, 0},
     {"_rcpp_module_boot_stan_fit4ContHybrid_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4ContHybrid_mod, 0},
     {"_rcpp_module_boot_stan_fit4T2EConcurrent_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4T2EConcurrent_mod, 0},
+    {"_rcpp_module_boot_stan_fit4T2EConcurrentC0_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4T2EConcurrentC0_mod, 0},
     {"_rcpp_module_boot_stan_fit4T2EExternal_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4T2EExternal_mod, 0},
     {"_rcpp_module_boot_stan_fit4T2EHybrid_mod", (DL_FUNC) &_rcpp_module_boot_stan_fit4T2EHybrid_mod, 0},
     {NULL, NULL, 0}
