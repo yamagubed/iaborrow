@@ -14,8 +14,6 @@ parameters {
   real<lower=0> alpha;
 }
 model {
-  alpha ~ exponential(1);
-
   for (i in 1:nEC_o)
     target += a0*weibull_lpdf(yEC_o[i]|alpha,exp(gammaCC+xEC_o[i]*beta));
 

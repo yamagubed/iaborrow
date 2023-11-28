@@ -14,14 +14,12 @@ data {
   row_vector[p] xCC_c[nCC_c];
 }
 parameters {
+  real theta;
   real gammaCC;
   vector[p] beta;
-  real theta;
   real<lower=0> alpha;
 }
 model {
-  alpha ~ exponential(1);
-
   for (i in 1:nCT_o)
     target += weibull_lpdf(yCT_o[i]|alpha,exp(gammaCC+theta+xCT_o[i]*beta));
   for (i in 1:nCC_o)
